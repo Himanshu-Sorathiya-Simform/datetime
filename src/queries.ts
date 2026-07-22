@@ -1,6 +1,7 @@
-import { isValid, toDate } from './core';
-import { _startOfWeekForDate } from './internals';
-import type { DateInput, DateRange, WeekStartsOn } from './types';
+import { isValid, toDate } from "./core";
+import { _startOfWeekForDate } from "./internals";
+import { getISOWeekYear } from "./manipulation";
+import type { DateInput, DateRange, WeekStartsOn } from "./types";
 
 function isSameDay(dateA: DateInput, dateB: DateInput): boolean {
 	const a = toDate(dateA);
@@ -9,9 +10,9 @@ function isSameDay(dateA: DateInput, dateB: DateInput): boolean {
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return (
-		a.getFullYear() === b.getFullYear() &&
-		a.getMonth() === b.getMonth() &&
-		a.getDate() === b.getDate()
+		a.getFullYear() === b.getFullYear()
+		&& a.getMonth() === b.getMonth()
+		&& a.getDate() === b.getDate()
 	);
 }
 
@@ -56,8 +57,8 @@ function isSameWeek(
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return (
-		_startOfWeekForDate(a, weekStartsOn).getTime() ===
-		_startOfWeekForDate(b, weekStartsOn).getTime()
+		_startOfWeekForDate(a, weekStartsOn).getTime()
+		=== _startOfWeekForDate(b, weekStartsOn).getTime()
 	);
 }
 
@@ -68,10 +69,10 @@ function isSameHour(dateA: DateInput, dateB: DateInput): boolean {
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return (
-		a.getFullYear() === b.getFullYear() &&
-		a.getMonth() === b.getMonth() &&
-		a.getDate() === b.getDate() &&
-		a.getHours() === b.getHours()
+		a.getFullYear() === b.getFullYear()
+		&& a.getMonth() === b.getMonth()
+		&& a.getDate() === b.getDate()
+		&& a.getHours() === b.getHours()
 	);
 }
 
@@ -82,11 +83,11 @@ function isSameMinute(dateA: DateInput, dateB: DateInput): boolean {
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return (
-		a.getFullYear() === b.getFullYear() &&
-		a.getMonth() === b.getMonth() &&
-		a.getDate() === b.getDate() &&
-		a.getHours() === b.getHours() &&
-		a.getMinutes() === b.getMinutes()
+		a.getFullYear() === b.getFullYear()
+		&& a.getMonth() === b.getMonth()
+		&& a.getDate() === b.getDate()
+		&& a.getHours() === b.getHours()
+		&& a.getMinutes() === b.getMinutes()
 	);
 }
 
@@ -97,12 +98,12 @@ function isSameSecond(dateA: DateInput, dateB: DateInput): boolean {
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return (
-		a.getFullYear() === b.getFullYear() &&
-		a.getMonth() === b.getMonth() &&
-		a.getDate() === b.getDate() &&
-		a.getHours() === b.getHours() &&
-		a.getMinutes() === b.getMinutes() &&
-		a.getSeconds() === b.getSeconds()
+		a.getFullYear() === b.getFullYear()
+		&& a.getMonth() === b.getMonth()
+		&& a.getDate() === b.getDate()
+		&& a.getHours() === b.getHours()
+		&& a.getMinutes() === b.getMinutes()
+		&& a.getSeconds() === b.getSeconds()
 	);
 }
 
@@ -113,9 +114,9 @@ function isSameTime(dateA: DateInput, dateB: DateInput): boolean {
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return (
-		a.getHours() === b.getHours() &&
-		a.getMinutes() === b.getMinutes() &&
-		a.getSeconds() === b.getSeconds()
+		a.getHours() === b.getHours()
+		&& a.getMinutes() === b.getMinutes()
+		&& a.getSeconds() === b.getSeconds()
 	);
 }
 
@@ -147,6 +148,15 @@ function compareDesc(dateLeft: DateInput, dateRight: DateInput): number {
 	return 0;
 }
 
+function isSameISOWeekYear(dateA: DateInput, dateB: DateInput): boolean {
+	const a = toDate(dateA);
+	const b = toDate(dateB);
+
+	if (!isValid(a) || !isValid(b)) return false;
+
+	return getISOWeekYear(a) === getISOWeekYear(b);
+}
+
 function isBefore(date: DateInput, compareDate: DateInput): boolean {
 	const a = toDate(date);
 	const b = toDate(compareDate);
@@ -163,6 +173,24 @@ function isAfter(date: DateInput, compareDate: DateInput): boolean {
 	if (!isValid(a) || !isValid(b)) return false;
 
 	return a.getTime() > b.getTime();
+}
+
+function isSameOrBefore(date: DateInput, compareDate: DateInput): boolean {
+	const a = toDate(date);
+	const b = toDate(compareDate);
+
+	if (!isValid(a) || !isValid(b)) return false;
+
+	return a.getTime() <= b.getTime();
+}
+
+function isSameOrAfter(date: DateInput, compareDate: DateInput): boolean {
+	const a = toDate(date);
+	const b = toDate(compareDate);
+
+	if (!isValid(a) || !isValid(b)) return false;
+
+	return a.getTime() >= b.getTime();
 }
 
 function isEqual(dateA: DateInput, dateB: DateInput): boolean {
@@ -190,17 +218,17 @@ function isWithinRange(date: DateInput, start: DateInput, end: DateInput): boole
 
 function isOverlapping(rangeA: DateRange, rangeB: DateRange): boolean {
 	if (
-		!isValid(rangeA.start) ||
-		!isValid(rangeA.end) ||
-		!isValid(rangeB.start) ||
-		!isValid(rangeB.end)
+		!isValid(rangeA.start)
+		|| !isValid(rangeA.end)
+		|| !isValid(rangeB.start)
+		|| !isValid(rangeB.end)
 	) {
 		return false;
 	}
 
 	return (
-		rangeA.start.getTime() < rangeB.end.getTime() &&
-		rangeA.end.getTime() > rangeB.start.getTime()
+		rangeA.start.getTime() < rangeB.end.getTime()
+		&& rangeA.end.getTime() > rangeB.start.getTime()
 	);
 }
 
@@ -347,8 +375,11 @@ export {
 	isPM,
 	isSameDay,
 	isSameHour,
+	isSameISOWeekYear,
 	isSameMinute,
 	isSameMonth,
+	isSameOrAfter,
+	isSameOrBefore,
 	isSameQuarter,
 	isSameSecond,
 	isSameTime,

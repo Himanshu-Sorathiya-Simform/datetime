@@ -1,6 +1,28 @@
-import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND } from './constants';
-import { getDaysInMonth, isValid, toDate } from './core';
-import type { DateInput, DateInterval, Duration, WeekStartsOn } from './types';
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND } from "./constants";
+import { getDaysInMonth, isValid, toDate } from "./core";
+import type {
+	DateInput,
+	DateInterval,
+	DateValues,
+	Duration,
+	WeekStartsOn,
+} from "./types";
+
+function add(date: DateInput, duration: Duration): Date {
+	let d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	if (duration.years) d = addYears(d, duration.years);
+	if (duration.months) d = addMonths(d, duration.months);
+	if (duration.weeks) d = addWeeks(d, duration.weeks);
+	if (duration.days) d = addDays(d, duration.days);
+	if (duration.hours) d = addHours(d, duration.hours);
+	if (duration.minutes) d = addMinutes(d, duration.minutes);
+	if (duration.seconds) d = addSeconds(d, duration.seconds);
+
+	return d;
+}
 
 function addMilliseconds(date: DateInput, amount: number): Date {
 	return new Date(toDate(date).getTime() + amount);
@@ -54,6 +76,22 @@ function addYears(date: DateInput, amount: number): Date {
 	return d;
 }
 
+function sub(date: DateInput, duration: Duration): Date {
+	let d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	if (duration.years) d = subYears(d, duration.years);
+	if (duration.months) d = subMonths(d, duration.months);
+	if (duration.weeks) d = subWeeks(d, duration.weeks);
+	if (duration.days) d = subDays(d, duration.days);
+	if (duration.hours) d = subHours(d, duration.hours);
+	if (duration.minutes) d = subMinutes(d, duration.minutes);
+	if (duration.seconds) d = subSeconds(d, duration.seconds);
+
+	return d;
+}
+
 function subMilliseconds(date: DateInput, amount: number): Date {
 	return addMilliseconds(date, -amount);
 }
@@ -84,6 +122,44 @@ function subMonths(date: DateInput, amount: number): Date {
 
 function subYears(date: DateInput, amount: number): Date {
 	return addYears(date, -amount);
+}
+
+function set(date: DateInput, values: DateValues): Date {
+	let d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	if (values.year !== undefined) d = setYear(d, values.year);
+	if (values.month !== undefined) d = setMonth(d, values.month);
+	if (values.date !== undefined) d = setDate(d, values.date);
+	if (values.hours !== undefined) d = setHours(d, values.hours);
+	if (values.minutes !== undefined) d = setMinutes(d, values.minutes);
+	if (values.seconds !== undefined) d = setSeconds(d, values.seconds);
+	if (values.milliseconds !== undefined)
+		d = setMilliseconds(d, values.milliseconds);
+
+	return d;
+}
+
+function setDay(
+	date: DateInput,
+	dayOfWeek: number,
+	options?: { weekStartsOn?: WeekStartsOn },
+): Date {
+	const d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	const weekStartsOn = options?.weekStartsOn ?? 0;
+	const currentDay = d.getDay();
+
+	const diff =
+		(dayOfWeek < weekStartsOn ? 7 : 0)
+		+ dayOfWeek
+		- (currentDay < weekStartsOn ? 7 : 0)
+		- currentDay;
+
+	return addDays(d, diff);
 }
 
 function setYear(date: DateInput, year: number): Date {
@@ -234,6 +310,39 @@ function endOfMonth(date: DateInput): Date {
 	return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
 }
 
+function getWeekOfMonth(date: DateInput, weekStartsOn: WeekStartsOn = 0): number {
+	const d = toDate(date);
+
+	if (!isValid(d)) return NaN;
+
+	const startMonth = startOfMonth(d);
+	const firstWeekStart = startOfWeek(startMonth, weekStartsOn);
+
+	const diffDays = Math.round(
+		(startOfDay(d).getTime() - firstWeekStart.getTime()) / MS_PER_DAY,
+	);
+
+	return Math.trunc(diffDays / 7) + 1;
+}
+
+function getWeeksInMonth(date: DateInput, weekStartsOn: WeekStartsOn = 0): number {
+	const d = toDate(date);
+
+	if (!isValid(d)) return NaN;
+
+	const start = startOfMonth(d);
+	const end = endOfMonth(d);
+
+	const firstWeekStart = startOfWeek(start, weekStartsOn);
+	const lastWeekStart = startOfWeek(end, weekStartsOn);
+
+	const diffDays = Math.round(
+		(lastWeekStart.getTime() - firstWeekStart.getTime()) / MS_PER_DAY,
+	);
+
+	return Math.trunc(diffDays / 7) + 1;
+}
+
 function startOfQuarter(date: DateInput): Date {
 	const d = toDate(date);
 
@@ -318,6 +427,29 @@ function differenceInYears(dateLeft: DateInput, dateRight: DateInput): number {
 	if (yearDiff < 0 && anchor.getTime() < left.getTime()) return yearDiff + 1;
 
 	return yearDiff;
+}
+
+function nextDay(date: DateInput, dayOfWeek: number): Date {
+	const d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	const currentDay = d.getDay();
+	const diff = (dayOfWeek < currentDay ? 7 : 0) + dayOfWeek - currentDay;
+	const increment = diff === 0 ? 7 : diff;
+
+	return addDays(d, increment);
+}
+
+function previousDay(date: DateInput, dayOfWeek: number): Date {
+	const d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	const currentDay = d.getDay();
+	const diff = currentDay - dayOfWeek + (currentDay <= dayOfWeek ? 7 : 0);
+
+	return subDays(d, diff);
 }
 
 function addBusinessDays(date: DateInput, amount: number): Date {
@@ -525,6 +657,32 @@ function roundToNearestMinutes(date: DateInput, step: number): Date {
 	return new Date(Math.round(toDate(date).getTime() / stepMs) * stepMs);
 }
 
+function roundToNearestHours(date: DateInput, step: number = 1): Date {
+	const d = toDate(date);
+
+	if (!isValid(d)) return new Date(NaN);
+
+	const hours = d.getHours();
+	const minutes = d.getMinutes();
+	const ms =
+		d.getMilliseconds()
+		+ d.getSeconds() * MS_PER_SECOND
+		+ minutes * MS_PER_MINUTE;
+
+	const halfStepMs = (MS_PER_HOUR * step) / 2;
+
+	const currentStep = Math.trunc(hours / step) * step;
+	const remainderMs = (hours % step) * MS_PER_HOUR + ms;
+
+	const roundedHours =
+		remainderMs >= halfStepMs ? currentStep + step : currentStep;
+
+	const result = new Date(d.getTime());
+	result.setHours(roundedHours, 0, 0, 0);
+
+	return result;
+}
+
 function getISOWeek(date: DateInput): number {
 	const d = toDate(date);
 	const dayOfWeek = d.getDay() || 7;
@@ -543,6 +701,66 @@ function setISOWeek(date: DateInput, week: number): Date {
 	d.setDate(d.getDate() + (week - currentWeek) * 7);
 
 	return d;
+}
+
+function getISOWeekYear(date: DateInput): number {
+	const d = toDate(date);
+
+	if (!isValid(d)) return NaN;
+
+	const year = d.getFullYear();
+	const fourthOfJanuary = new Date(year, 0, 4);
+	const startOfFirstWeek = startOfWeek(fourthOfJanuary, 1);
+
+	if (d.getTime() < startOfFirstWeek.getTime()) {
+		return year - 1;
+	}
+
+	const nextFourthOfJanuary = new Date(year + 1, 0, 4);
+	const startOfNextYearFirstWeek = startOfWeek(nextFourthOfJanuary, 1);
+
+	if (d.getTime() >= startOfNextYearFirstWeek.getTime()) {
+		return year + 1;
+	}
+
+	return year;
+}
+
+function getISOWeeksInYear(date: DateInput): number {
+	const year = getISOWeekYear(date);
+
+	if (Number.isNaN(year)) return NaN;
+
+	const start = startOfISOWeekYear(date);
+	const fourthOfJanuaryNextYear = new Date(year + 1, 0, 4);
+	const startNext = startOfWeek(fourthOfJanuaryNextYear, 1);
+
+	const diffDays = Math.round(
+		(startNext.getTime() - start.getTime()) / MS_PER_DAY,
+	);
+
+	return Math.trunc(diffDays / 7);
+}
+
+function startOfISOWeekYear(date: DateInput): Date {
+	const year = getISOWeekYear(date);
+
+	if (Number.isNaN(year)) return new Date(NaN);
+
+	const fourthOfJanuary = new Date(year, 0, 4);
+
+	return startOfWeek(fourthOfJanuary, 1);
+}
+
+function endOfISOWeekYear(date: DateInput): Date {
+	const year = getISOWeekYear(date);
+
+	if (Number.isNaN(year)) return new Date(NaN);
+
+	const fourthOfJanuaryNextYear = new Date(year + 1, 0, 4);
+	const startOfNextYear = startOfWeek(fourthOfJanuaryNextYear, 1);
+
+	return new Date(startOfNextYear.getTime() - 1);
 }
 
 function intervalToDuration(interval: DateInterval): Duration {
@@ -571,13 +789,13 @@ function durationToMilliseconds(duration: Duration): number {
 	const MS_PER_MONTH = 30.4375 * MS_PER_DAY;
 
 	return (
-		(duration.years ?? 0) * MS_PER_YEAR +
-		(duration.months ?? 0) * MS_PER_MONTH +
-		(duration.weeks ?? 0) * 7 * MS_PER_DAY +
-		(duration.days ?? 0) * MS_PER_DAY +
-		(duration.hours ?? 0) * MS_PER_HOUR +
-		(duration.minutes ?? 0) * MS_PER_MINUTE +
-		(duration.seconds ?? 0) * MS_PER_SECOND
+		(duration.years ?? 0) * MS_PER_YEAR
+		+ (duration.months ?? 0) * MS_PER_MONTH
+		+ (duration.weeks ?? 0) * 7 * MS_PER_DAY
+		+ (duration.days ?? 0) * MS_PER_DAY
+		+ (duration.hours ?? 0) * MS_PER_HOUR
+		+ (duration.minutes ?? 0) * MS_PER_MINUTE
+		+ (duration.seconds ?? 0) * MS_PER_SECOND
 	);
 }
 
@@ -591,10 +809,10 @@ function getOverlappingDaysInInterval(
 	const rightEnd = toDate(intervalRight.end);
 
 	if (
-		!isValid(leftStart) ||
-		!isValid(leftEnd) ||
-		!isValid(rightStart) ||
-		!isValid(rightEnd)
+		!isValid(leftStart)
+		|| !isValid(leftEnd)
+		|| !isValid(rightStart)
+		|| !isValid(rightEnd)
 	) {
 		return NaN;
 	}
@@ -626,6 +844,7 @@ function getOverlappingDaysInInterval(
 }
 
 export {
+	add,
 	addBusinessDays,
 	addDays,
 	addHours,
@@ -655,6 +874,7 @@ export {
 	eachYearOfInterval,
 	endOfDay,
 	endOfHour,
+	endOfISOWeekYear,
 	endOfMinute,
 	endOfMonth,
 	endOfQuarter,
@@ -662,12 +882,21 @@ export {
 	endOfYear,
 	fromUnixTime,
 	getISOWeek,
+	getISOWeeksInYear,
+	getISOWeekYear,
 	getOverlappingDaysInInterval,
+	getWeekOfMonth,
+	getWeeksInMonth,
 	intervalToDuration,
 	max,
 	min,
+	nextDay,
+	previousDay,
+	roundToNearestHours,
 	roundToNearestMinutes,
+	set,
 	setDate,
+	setDay,
 	setHours,
 	setISOWeek,
 	setMilliseconds,
@@ -677,11 +906,13 @@ export {
 	setYear,
 	startOfDay,
 	startOfHour,
+	startOfISOWeekYear,
 	startOfMinute,
 	startOfMonth,
 	startOfQuarter,
 	startOfWeek,
 	startOfYear,
+	sub,
 	subDays,
 	subHours,
 	subMilliseconds,

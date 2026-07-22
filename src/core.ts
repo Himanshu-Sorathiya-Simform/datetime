@@ -1,11 +1,11 @@
-import type { DateInput } from './types';
+import type { DateInput } from "./types";
 
 function toDate(input: DateInput): Date {
 	if (input instanceof Date) {
 		return new Date(input.getTime());
 	}
 
-	if (typeof input !== 'number' && typeof input !== 'string') {
+	if (typeof input !== "number" && typeof input !== "string") {
 		return new Date(NaN);
 	}
 
@@ -93,12 +93,22 @@ function getDayOfYear(date: DateInput): number {
 	return Math.round((dayStart.getTime() - yearStart.getTime()) / 86_400_000) + 1;
 }
 
+function getDaysInYear(date: DateInput): number {
+	const d = toDate(date);
+
+	if (!isValid(d)) return NaN;
+
+	const year = d.getFullYear();
+	return year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0) ? 366 : 365;
+}
+
 export {
 	createDate,
 	getDate,
 	getDayOfWeek,
 	getDayOfYear,
 	getDaysInMonth,
+	getDaysInYear,
 	getHours,
 	getMilliseconds,
 	getMinutes,

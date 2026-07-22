@@ -4,6 +4,7 @@ export {
 	getDayOfWeek,
 	getDayOfYear,
 	getDaysInMonth,
+	getDaysInYear,
 	getHours,
 	getMilliseconds,
 	getMinutes,
@@ -15,7 +16,7 @@ export {
 	isDate,
 	isValid,
 	toDate,
-} from './core.js';
+} from "./core.js";
 
 export {
 	compareAsc,
@@ -34,8 +35,11 @@ export {
 	isPM,
 	isSameDay,
 	isSameHour,
+	isSameISOWeekYear,
 	isSameMinute,
 	isSameMonth,
+	isSameOrAfter,
+	isSameOrBefore,
 	isSameQuarter,
 	isSameSecond,
 	isSameTime,
@@ -50,9 +54,10 @@ export {
 	isWeekend,
 	isWithinRange,
 	isYesterday,
-} from './queries.js';
+} from "./queries.js";
 
 export {
+	add,
 	addBusinessDays,
 	addDays,
 	addHours,
@@ -82,6 +87,7 @@ export {
 	eachYearOfInterval,
 	endOfDay,
 	endOfHour,
+	endOfISOWeekYear,
 	endOfMinute,
 	endOfMonth,
 	endOfQuarter,
@@ -89,12 +95,21 @@ export {
 	endOfYear,
 	fromUnixTime,
 	getISOWeek,
+	getISOWeeksInYear,
+	getISOWeekYear,
 	getOverlappingDaysInInterval,
+	getWeekOfMonth,
+	getWeeksInMonth,
 	intervalToDuration,
 	max,
 	min,
+	nextDay,
+	previousDay,
+	roundToNearestHours,
 	roundToNearestMinutes,
+	set,
 	setDate,
+	setDay,
 	setHours,
 	setISOWeek,
 	setMilliseconds,
@@ -104,11 +119,13 @@ export {
 	setYear,
 	startOfDay,
 	startOfHour,
+	startOfISOWeekYear,
 	startOfMinute,
 	startOfMonth,
 	startOfQuarter,
 	startOfWeek,
 	startOfYear,
+	sub,
 	subDays,
 	subHours,
 	subMilliseconds,
@@ -118,7 +135,7 @@ export {
 	subWeeks,
 	subYears,
 	toUnixTime,
-} from './manipulation.js';
+} from "./manipulation.js";
 
 export {
 	format,
@@ -131,4 +148,4 @@ export {
 	formatRFC3339,
 	parseISO,
 	toISOString,
-} from './format.js';
+} from "./format.js";

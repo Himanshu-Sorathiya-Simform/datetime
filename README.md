@@ -57,8 +57,11 @@ The immutability gateway and primitive getters. Every other function in the libr
 | `getTimestamp(date)` | `number` | Epoch milliseconds — prefer this over repeated `isBefore()` calls in hot loops. |
 | `getDayOfWeek(date)` | `number` | 0 = Sunday … 6 = Saturday (local time). |
 | `getDaysInMonth(date)` | `number` | Leap-year aware. |
+| `getDaysInYear(date)` | `number` | 365 or 366. |
 | `getQuarter(date)` | `number` | 1–4. |
 | `getDayOfYear(date)` | `number` | 1–366, DST-safe (computed from start-of-day timestamps). |
+| `getWeekOfMonth(date, weekStartsOn?)` | `number` | 1–6 (depends on day-of-week overflow). |
+| `getWeeksInMonth(date, weekStartsOn?)` | `number` | Total calendar rows needed to render the month. |
 
 ### Queries (Predicates)
 
@@ -71,12 +74,15 @@ Pure boolean functions. No date values are ever returned here — only `true` or
 | `isSameYear(a, b)` | |
 | `isSameQuarter(a, b)` | Checks year too. |
 | `isSameWeek(a, b, weekStartsOn?)` | Defaults to Sunday start (`0`); pass `1` for Monday / ISO. |
+| `isSameISOWeekYear(a, b)` | Compares the ISO-8601 week-numbering year. |
 | `isSameHour(a, b)` | Checks full date + hour. |
 | `isSameMinute(a, b)` | Checks full date + hour + minute. |
 | `isSameSecond(a, b)` | Checks full date + H:M:S. |
 | `isSameTime(a, b)` | Checks H:M:S only — ignores the calendar date entirely. |
 | `isBefore(date, compareDate)` | Strict millisecond comparison. |
 | `isAfter(date, compareDate)` | Strict millisecond comparison. |
+| `isSameOrBefore(date, compareDate)` | Inclusive boundary check. |
+| `isSameOrAfter(date, compareDate)` | Inclusive boundary check. |
 | `isEqual(a, b)` | Fixes native `Date` object-reference inequality by comparing timestamps. |
 | `compareAsc(left, right)` | Array sort comparator: returns `-1`, `0`, or `1`. |
 | `compareDesc(left, right)` | Reverse array sort comparator: returns `1`, `0`, or `-1`. |
@@ -115,6 +121,8 @@ Date arithmetic, field setters, period snapping, difference calculations, and ra
 | `addWeeks` / `subWeeks` | Delegates to `addDays(date, amount * 7)`. |
 | `addMonths` / `subMonths` | End-of-month clamped: `addMonths(Jan 31, 1)` → Feb 28, not Mar 3. |
 | `addYears` / `subYears` | Leap-year clamped: `addYears(Feb 29 2024, 1)` → Feb 28 2025. |
+| `add` / `sub` | Applies a complex `Duration` object (e.g. `{ months: 1, days: 5 }`). Processes largest-to-smallest units to prevent drift. |
+| `nextDay` / `previousDay` | Skips forward/backward to the next/previous occurrence of a specific weekday (0-6). |
 
 **Set** (same overflow-clamping guarantees as their `add` counterparts)
 
@@ -127,6 +135,8 @@ Date arithmetic, field setters, period snapping, difference calculations, and ra
 | `setMinutes(date, minutes)` | |
 | `setSeconds(date, seconds)` | |
 | `setMilliseconds(date, ms)` | |
+| `set(date, values)` | Updates multiple fields at once via a `DateValues` object. |
+| `setDay(date, dayOfWeek, options?)` | Sets the day of the week *within the current week*. |
 
 **Start / End of Period**
 
@@ -187,8 +197,12 @@ Date arithmetic, field setters, period snapping, difference calculations, and ra
 | Function | Notes |
 | --- | --- |
 | `roundToNearestMinutes(date, step)` | Snaps to the nearest multiple of `step` minutes. |
+| `roundToNearestHours(date, step)` | Snaps to the nearest multiple of `step` hours. |
 | `getISOWeek(date)` | ISO-8601 week number (1–53); Week 1 contains the year's first Thursday. |
 | `setISOWeek(date, week)` | Shifts the date to the same weekday within the target ISO week. |
+| `getISOWeekYear(date)` | The ISO week-numbering year. |
+| `getISOWeeksInYear(date)` | Total ISO weeks in the given date's year (52 or 53). |
+| `startOfISOWeekYear` / `endOfISOWeekYear` | The exact start/end boundary of the ISO year. |
 
 **Duration**
 

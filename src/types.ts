@@ -22,6 +22,16 @@ type Duration = {
 	seconds?: number;
 };
 
+type DateValues = {
+	year?: number;
+	month?: number;
+	date?: number;
+	hours?: number;
+	minutes?: number;
+	seconds?: number;
+	milliseconds?: number;
+};
+
 interface FormatDistanceOptions {
 	addSuffix?: boolean;
 	includeSeconds?: boolean;
@@ -30,8 +40,8 @@ interface FormatDistanceOptions {
 interface FormatDistanceToNowOptions extends FormatDistanceOptions {}
 
 type FormatDistanceStrictUnit =
-	'second' | 'minute' | 'hour' | 'day' | 'month' | 'year';
-type RoundingMethod = 'round' | 'floor' | 'ceil';
+	"second" | "minute" | "hour" | "day" | "month" | "year";
+type RoundingMethod = "round" | "floor" | "ceil";
 
 interface FormatDistanceStrictOptions {
 	addSuffix?: boolean;
@@ -40,12 +50,12 @@ interface FormatDistanceStrictOptions {
 }
 
 type RelativeTimeUnit =
-	'year' | 'quarter' | 'month' | 'week' | 'day' | 'hour' | 'minute' | 'second';
+	"year" | "quarter" | "month" | "week" | "day" | "hour" | "minute" | "second";
 
 interface FormatDistanceIntlOptions {
 	locale?: string | string[];
-	numeric?: 'always' | 'auto';
-	style?: 'long' | 'short' | 'narrow';
+	numeric?: "always" | "auto";
+	style?: "long" | "short" | "narrow";
 	unit?: RelativeTimeUnit;
 }
 
@@ -60,6 +70,7 @@ export type {
 	DateInput,
 	DateInterval,
 	DateRange,
+	DateValues,
 	Duration,
 	FormatDistanceIntlOptions,
 	FormatDistanceOptions,

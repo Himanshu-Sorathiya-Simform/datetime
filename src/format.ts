@@ -12,15 +12,15 @@ import {
 	RFC2822_MONTHS,
 	ROUNDERS,
 	TOKEN_FORMATTERS,
-} from './constants.js';
-import { getTimestamp, isValid, toDate } from './core';
+} from "./constants.js";
+import { getTimestamp, isValid, toDate } from "./core";
 import {
 	_tzParts,
 	applySuffix,
 	formatUnderAMinute,
 	pluralize,
 	resolveIntlUnit,
-} from './internals.js';
+} from "./internals.js";
 import {
 	differenceInDays,
 	differenceInHours,
@@ -29,7 +29,7 @@ import {
 	differenceInSeconds,
 	differenceInYears,
 	startOfWeek,
-} from './manipulation';
+} from "./manipulation";
 import type {
 	DateInput,
 	Duration,
@@ -39,7 +39,7 @@ import type {
 	FormatDistanceStrictUnit,
 	FormatDistanceToNowOptions,
 	FormatRelativeOptions,
-} from './types';
+} from "./types";
 
 function format(
 	date: DateInput,
@@ -48,14 +48,14 @@ function format(
 ): string {
 	const d = toDate(date);
 
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
-	const locale = options?.locale ?? 'default';
+	const locale = options?.locale ?? "default";
 
 	return formatString.replace(FORMAT_REGEX, (match) => {
 		if (match.startsWith("'")) {
 			const inner = match.slice(1, -1);
-			return inner === '' ? "'" : inner;
+			return inner === "" ? "'" : inner;
 		}
 
 		const handler = TOKEN_FORMATTERS[match as FormatToken];
@@ -66,12 +66,12 @@ function format(
 
 function formatDate(
 	date: DateInput,
-	locale: string | string[] = 'default',
+	locale: string | string[] = "default",
 	options: Intl.DateTimeFormatOptions = {},
 ): string {
 	const d = toDate(date);
 
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
 	return new Intl.DateTimeFormat(locale, options).format(d);
 }
@@ -79,14 +79,14 @@ function formatDate(
 function formatRelativeTime(
 	date: DateInput,
 	baseDate: DateInput = new Date(),
-	locale: string | string[] = 'default',
+	locale: string | string[] = "default",
 ): string {
 	const d = toDate(date);
 	const base = toDate(baseDate);
 
-	if (!isValid(d) || !isValid(base)) return 'Invalid Date';
+	if (!isValid(d) || !isValid(base)) return "Invalid Date";
 
-	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 	const abs = Math.abs.bind(Math);
 
 	const seconds = differenceInSeconds(d, base);
@@ -97,45 +97,45 @@ function formatRelativeTime(
 	const months = Math.round(days / 30.4375);
 	const years = Math.round(days / 365.25);
 
-	if (abs(seconds) < 60) return rtf.format(seconds, 'second');
-	if (abs(minutes) < 60) return rtf.format(minutes, 'minute');
-	if (abs(hours) < 24) return rtf.format(hours, 'hour');
-	if (abs(days) < 7) return rtf.format(days, 'day');
-	if (abs(weeks) < 4) return rtf.format(weeks, 'week');
-	if (abs(months) < 12) return rtf.format(months, 'month');
+	if (abs(seconds) < 60) return rtf.format(seconds, "second");
+	if (abs(minutes) < 60) return rtf.format(minutes, "minute");
+	if (abs(hours) < 24) return rtf.format(hours, "hour");
+	if (abs(days) < 7) return rtf.format(days, "day");
+	if (abs(weeks) < 4) return rtf.format(weeks, "week");
+	if (abs(months) < 12) return rtf.format(months, "month");
 
-	return rtf.format(years, 'year');
+	return rtf.format(years, "year");
 }
 
 function formatISO(
 	date: DateInput,
 	options?: {
-		format?: 'extended' | 'basic';
-		representation?: 'complete' | 'date' | 'time';
+		format?: "extended" | "basic";
+		representation?: "complete" | "date" | "time";
 	},
 ): string {
 	const d = toDate(date);
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
-	const fmt = options?.format ?? 'extended';
-	const rep = options?.representation ?? 'complete';
-	const sep = fmt === 'extended' ? '-' : '';
-	const timeSep = fmt === 'extended' ? ':' : '';
+	const fmt = options?.format ?? "extended";
+	const rep = options?.representation ?? "complete";
+	const sep = fmt === "extended" ? "-" : "";
+	const timeSep = fmt === "extended" ? ":" : "";
 
-	const year = String(d.getFullYear()).padStart(4, '0');
-	const month = String(d.getMonth() + 1).padStart(2, '0');
-	const day = String(d.getDate()).padStart(2, '0');
-	const hours = String(d.getHours()).padStart(2, '0');
-	const minutes = String(d.getMinutes()).padStart(2, '0');
-	const seconds = String(d.getSeconds()).padStart(2, '0');
+	const year = String(d.getFullYear()).padStart(4, "0");
+	const month = String(d.getMonth() + 1).padStart(2, "0");
+	const day = String(d.getDate()).padStart(2, "0");
+	const hours = String(d.getHours()).padStart(2, "0");
+	const minutes = String(d.getMinutes()).padStart(2, "0");
+	const seconds = String(d.getSeconds()).padStart(2, "0");
 	const tz = _tzParts(d);
 	const tzStr = `${tz.sign}${tz.hours}${timeSep}${tz.minutes}`;
 
 	const datePart = `${year}${sep}${month}${sep}${day}`;
 	const timePart = `${hours}${timeSep}${minutes}${timeSep}${seconds}`;
 
-	if (rep === 'date') return datePart;
-	if (rep === 'time') return `${timePart}${tzStr}`;
+	if (rep === "date") return datePart;
+	if (rep === "time") return `${timePart}${tzStr}`;
 
 	return `${datePart}T${timePart}${tzStr}`;
 }
@@ -145,25 +145,25 @@ function formatRFC3339(
 	options?: { fractionDigits?: 0 | 1 | 2 | 3 },
 ): string {
 	const d = toDate(date);
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
 	const fractionDigits = options?.fractionDigits ?? 0;
-	const year = String(d.getFullYear()).padStart(4, '0');
-	const month = String(d.getMonth() + 1).padStart(2, '0');
-	const day = String(d.getDate()).padStart(2, '0');
-	const hours = String(d.getHours()).padStart(2, '0');
-	const minutes = String(d.getMinutes()).padStart(2, '0');
-	const seconds = String(d.getSeconds()).padStart(2, '0');
+	const year = String(d.getFullYear()).padStart(4, "0");
+	const month = String(d.getMonth() + 1).padStart(2, "0");
+	const day = String(d.getDate()).padStart(2, "0");
+	const hours = String(d.getHours()).padStart(2, "0");
+	const minutes = String(d.getMinutes()).padStart(2, "0");
+	const seconds = String(d.getSeconds()).padStart(2, "0");
 
 	const fraction =
 		fractionDigits > 0 ?
-			'.' +
-			String(d.getMilliseconds()).padStart(3, '0').slice(0, fractionDigits)
-		:	'';
+			"."
+			+ String(d.getMilliseconds()).padStart(3, "0").slice(0, fractionDigits)
+		:	"";
 
 	const rawOffset = d.getTimezoneOffset();
 	const tz =
-		rawOffset === 0 ? 'Z' : (
+		rawOffset === 0 ? "Z" : (
 			(() => {
 				const t = _tzParts(d);
 				return `${t.sign}${t.hours}:${t.minutes}`;
@@ -175,36 +175,36 @@ function formatRFC3339(
 
 function formatISO9075(
 	date: DateInput,
-	options?: { representation?: 'complete' | 'date' | 'time' },
+	options?: { representation?: "complete" | "date" | "time" },
 ): string {
 	const d = toDate(date);
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
-	const rep = options?.representation ?? 'complete';
-	const year = String(d.getFullYear()).padStart(4, '0');
-	const month = String(d.getMonth() + 1).padStart(2, '0');
-	const day = String(d.getDate()).padStart(2, '0');
-	const hours = String(d.getHours()).padStart(2, '0');
-	const minutes = String(d.getMinutes()).padStart(2, '0');
-	const seconds = String(d.getSeconds()).padStart(2, '0');
+	const rep = options?.representation ?? "complete";
+	const year = String(d.getFullYear()).padStart(4, "0");
+	const month = String(d.getMonth() + 1).padStart(2, "0");
+	const day = String(d.getDate()).padStart(2, "0");
+	const hours = String(d.getHours()).padStart(2, "0");
+	const minutes = String(d.getMinutes()).padStart(2, "0");
+	const seconds = String(d.getSeconds()).padStart(2, "0");
 
-	if (rep === 'date') return `${year}-${month}-${day}`;
-	if (rep === 'time') return `${hours}:${minutes}:${seconds}`;
+	if (rep === "date") return `${year}-${month}-${day}`;
+	if (rep === "time") return `${hours}:${minutes}:${seconds}`;
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 function formatRFC2822(date: DateInput): string {
 	const d = toDate(date);
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
 	const dayName = RFC2822_DAYS[d.getDay()];
-	const dayOfMonth = String(d.getDate()).padStart(2, '0');
+	const dayOfMonth = String(d.getDate()).padStart(2, "0");
 	const monthName = RFC2822_MONTHS[d.getMonth()];
 	const year = d.getFullYear();
-	const hours = String(d.getHours()).padStart(2, '0');
-	const minutes = String(d.getMinutes()).padStart(2, '0');
-	const seconds = String(d.getSeconds()).padStart(2, '0');
+	const hours = String(d.getHours()).padStart(2, "0");
+	const minutes = String(d.getMinutes()).padStart(2, "0");
+	const seconds = String(d.getSeconds()).padStart(2, "0");
 	const tz = _tzParts(d);
 
 	return `${dayName}, ${dayOfMonth} ${monthName} ${year} ${hours}:${minutes}:${seconds} ${tz.sign}${tz.hours}${tz.minutes}`;
@@ -220,8 +220,8 @@ function formatDuration(
 	},
 ): string {
 	const includeZero = options?.zero ?? false;
-	const delimiter = options?.delimiter ?? ', ';
-	const locale = options?.locale ?? 'default';
+	const delimiter = options?.delimiter ?? ", ";
+	const locale = options?.locale ?? "default";
 	const keys = options?.format ?? DURATION_UNIT_KEYS;
 
 	const pr = new Intl.PluralRules(locale);
@@ -234,7 +234,7 @@ function formatDuration(
 
 		const [singular, plural] = DURATION_LABELS[key];
 
-		const label = pr.select(value) === 'one' ? singular : plural;
+		const label = pr.select(value) === "one" ? singular : plural;
 
 		parts.push(`${nf.format(value)} ${label}`);
 	}
@@ -245,7 +245,7 @@ function formatDuration(
 function toISOString(date: DateInput): string {
 	const d = toDate(date);
 
-	if (!isValid(d)) return 'Invalid Date';
+	if (!isValid(d)) return "Invalid Date";
 
 	return d.toISOString();
 }
@@ -267,7 +267,7 @@ function formatDistance(
 	const base = toDate(baseDate);
 
 	if (!isValid(target) || !isValid(base)) {
-		return 'Invalid Date';
+		return "Invalid Date";
 	}
 
 	const { addSuffix = false, includeSeconds = false } = options;
@@ -284,17 +284,17 @@ function formatDistance(
 	let result: string;
 
 	if (seconds < 45) {
-		result = includeSeconds ? formatUnderAMinute(seconds) : 'less than a minute';
+		result = includeSeconds ? formatUnderAMinute(seconds) : "less than a minute";
 	} else if (seconds < 90) {
-		result = 'a minute';
+		result = "a minute";
 	} else if (minutes < 45) {
 		result = `${Math.round(minutes)} minutes`;
 	} else if (minutes < 90) {
-		result = 'about an hour';
+		result = "about an hour";
 	} else if (hours < 22) {
 		result = `about ${Math.round(hours)} hours`;
 	} else if (hours < 42) {
-		result = 'a day';
+		result = "a day";
 	} else if (days < 27) {
 		result = `${Math.round(hours / 24)} days`;
 	} else {
@@ -302,10 +302,10 @@ function formatDistance(
 		const months = Math.max(rawMonths, 1);
 
 		if (months < 12) {
-			result = months === 1 ? 'about a month' : `about ${months} months`;
+			result = months === 1 ? "about a month" : `about ${months} months`;
 		} else {
 			const years = Math.round(months / 12);
-			result = years === 1 ? 'about a year' : `about ${years} years`;
+			result = years === 1 ? "about a year" : `about ${years} years`;
 		}
 	}
 
@@ -321,10 +321,10 @@ function formatDistanceStrict(
 	const base = toDate(baseDate);
 
 	if (!isValid(target) || !isValid(base)) {
-		return 'Invalid Date';
+		return "Invalid Date";
 	}
 
-	const { addSuffix = false, unit, roundingMethod = 'round' } = options;
+	const { addSuffix = false, unit, roundingMethod = "round" } = options;
 	const round = ROUNDERS[roundingMethod];
 
 	const diffMs = getTimestamp(target) - getTimestamp(base);
@@ -335,31 +335,31 @@ function formatDistanceStrict(
 	let count: number;
 
 	if (
-		unit === 'year' ||
-		(!unit && Math.abs(differenceInYears(target, base)) >= 1)
+		unit === "year"
+		|| (!unit && Math.abs(differenceInYears(target, base)) >= 1)
 	) {
-		resolvedUnit = 'year';
+		resolvedUnit = "year";
 		count = Math.abs(differenceInYears(target, base));
 	} else if (
-		unit === 'month' ||
-		(!unit && Math.abs(differenceInMonths(target, base)) >= 1)
+		unit === "month"
+		|| (!unit && Math.abs(differenceInMonths(target, base)) >= 1)
 	) {
-		resolvedUnit = 'month';
+		resolvedUnit = "month";
 		count = Math.abs(differenceInMonths(target, base));
 	} else if (
-		unit === 'day' ||
-		(!unit && Math.abs(differenceInDays(target, base)) >= 1)
+		unit === "day"
+		|| (!unit && Math.abs(differenceInDays(target, base)) >= 1)
 	) {
-		resolvedUnit = 'day';
+		resolvedUnit = "day";
 		count = Math.abs(differenceInDays(target, base));
-	} else if (unit === 'hour' || (!unit && absMs >= MS_PER_HOUR)) {
-		resolvedUnit = 'hour';
+	} else if (unit === "hour" || (!unit && absMs >= MS_PER_HOUR)) {
+		resolvedUnit = "hour";
 		count = round(absMs / MS_PER_HOUR);
-	} else if (unit === 'minute' || (!unit && absMs >= MS_PER_MINUTE)) {
-		resolvedUnit = 'minute';
+	} else if (unit === "minute" || (!unit && absMs >= MS_PER_MINUTE)) {
+		resolvedUnit = "minute";
 		count = round(absMs / MS_PER_MINUTE);
 	} else {
-		resolvedUnit = 'second';
+		resolvedUnit = "second";
 		count = round(absMs / MS_PER_SECOND);
 	}
 
@@ -384,15 +384,15 @@ function formatDistanceIntl(
 	const base = toDate(baseDate);
 
 	if (!isValid(target) || !isValid(base)) {
-		return 'Invalid Date';
+		return "Invalid Date";
 	}
 
-	const { locale, numeric = 'auto', style = 'long', unit } = options;
+	const { locale, numeric = "auto", style = "long", unit } = options;
 	const { unit: resolvedUnit, count } = resolveIntlUnit(target, base, unit);
 
 	if (
-		typeof Intl === 'undefined' ||
-		typeof Intl.RelativeTimeFormat === 'undefined'
+		typeof Intl === "undefined"
+		|| typeof Intl.RelativeTimeFormat === "undefined"
 	) {
 		const text = pluralize(Math.abs(count), resolvedUnit);
 		return applySuffix(text, count > 0, true);
@@ -417,12 +417,12 @@ function formatRelative(
 	const base = toDate(baseDate);
 
 	if (!isValid(target) || !isValid(base)) {
-		return 'Invalid Date';
+		return "Invalid Date";
 	}
 
 	const {
 		weekStartsOn = 0,
-		timeFormat = 'h:mm a',
+		timeFormat = "h:mm a",
 		fallbackFormat,
 		locale,
 	} = options;
@@ -438,7 +438,7 @@ function formatRelative(
 	const baseWeekStart = startOfWeek(base, weekStartsOn);
 	const weekStartDiff = differenceInDays(targetWeekStart, baseWeekStart);
 
-	const weekday = format(target, 'EEEE');
+	const weekday = format(target, "EEEE");
 
 	if (weekStartDiff === 0) return `${weekday} at ${timeStr}`;
 	if (weekStartDiff === 7) return `Next ${weekday} at ${timeStr}`;
