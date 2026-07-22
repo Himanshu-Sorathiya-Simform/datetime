@@ -1,7 +1,7 @@
 {
 	"name": "@himanshu-sorathiya/datetime",
 	"version": "1.0.0",
-	"description": "A fully type safe and runtime safe Date & Time utilities library with rich set of APIs.",
+	"description": "A strictly client-side, fully type-safe, zero-dependency toolkit for parsing, querying, manipulating, and formatting dates in TypeScript. Every function is a pure, immutable transformation — no wrapper classes, no prototype patching, no hidden global state.",
 	"type": "module",
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",

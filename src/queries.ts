@@ -1,16 +1,6 @@
 import { isValid, toDate } from './core';
+import { _startOfWeekForDate } from './internals';
 import type { DateInput, DateRange, WeekStartsOn } from './types';
-
-function _startOfWeekForDate(d: Date, weekStartsOn: WeekStartsOn): Date {
-	const result = new Date(d);
-
-	const day = result.getDay();
-	const diff = (day - weekStartsOn + 7) % 7;
-	result.setDate(result.getDate() - diff);
-	result.setHours(0, 0, 0, 0);
-
-	return result;
-}
 
 function isSameDay(dateA: DateInput, dateB: DateInput): boolean {
 	const a = toDate(dateA);
