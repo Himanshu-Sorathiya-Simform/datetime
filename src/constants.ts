@@ -1,7 +1,12 @@
 import { getDayOfYear } from './core.js';
 import { _tzParts } from './internals.js';
 import { getISOWeek } from './manipulation.js';
-import type { Duration } from './types.js';
+import type { Duration, RoundingMethod } from './types.js';
+
+const MS_PER_SECOND = 1_000;
+const MS_PER_MINUTE = 60_000;
+const MS_PER_HOUR = 3_600_000;
+const MS_PER_DAY = 86_400_000;
 
 const TOKEN_FORMATTERS = {
 	yyyy: (d: Date) => String(d.getFullYear()).padStart(4, '0'),
@@ -112,11 +117,27 @@ const DURATION_LABELS: Readonly<Record<keyof Duration, [string, string]>> = {
 	seconds: ['second', 'seconds'],
 };
 
+const ISO_8601_REGEX =
+	/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/;
+
+const ROUNDERS: Record<RoundingMethod, (n: number) => number> = {
+	round: Math.round,
+	floor: Math.floor,
+	ceil: Math.ceil,
+};
+
 export {
 	DURATION_LABELS,
 	DURATION_UNIT_KEYS,
 	FORMAT_REGEX,
+	ISO_8601_REGEX,
+	MS_PER_DAY,
+	MS_PER_HOUR,
+	MS_PER_MINUTE,
+	MS_PER_SECOND,
 	RFC2822_DAYS,
 	RFC2822_MONTHS,
-	TOKEN_FORMATTERS, type FormatToken
+	ROUNDERS,
+	TOKEN_FORMATTERS,
+	type FormatToken,
 };

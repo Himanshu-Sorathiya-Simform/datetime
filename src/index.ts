@@ -18,6 +18,8 @@ export {
 } from './core.js';
 
 export {
+	compareAsc,
+	compareDesc,
 	isAfter,
 	isAM,
 	isBefore,
@@ -73,6 +75,8 @@ export {
 	differenceInYears,
 	durationToMilliseconds,
 	eachDayOfInterval,
+	eachHourOfInterval,
+	eachMinuteOfInterval,
 	eachMonthOfInterval,
 	eachWeekOfInterval,
 	eachYearOfInterval,
@@ -85,6 +89,7 @@ export {
 	endOfYear,
 	fromUnixTime,
 	getISOWeek,
+	getOverlappingDaysInInterval,
 	intervalToDuration,
 	max,
 	min,

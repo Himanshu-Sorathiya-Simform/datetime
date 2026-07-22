@@ -1,10 +1,6 @@
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND } from './constants';
 import { getDaysInMonth, isValid, toDate } from './core';
 import type { DateInput, DateInterval, Duration, WeekStartsOn } from './types';
-
-const MS_PER_SECOND = 1_000;
-const MS_PER_MINUTE = 60_000;
-const MS_PER_HOUR = 3_600_000;
-const MS_PER_DAY = 86_400_000;
 
 function addMilliseconds(date: DateInput, amount: number): Date {
 	return new Date(toDate(date).getTime() + amount);
@@ -416,6 +412,42 @@ function closestTo(date: DateInput, datesArray: Date[]): Date | null {
 	});
 }
 
+function eachMinuteOfInterval(interval: DateInterval, step: number = 1): Date[] {
+	const result: Date[] = [];
+	const start = startOfMinute(toDate(interval.start));
+	const end = startOfMinute(toDate(interval.end));
+	const current = new Date(start);
+	const safeStep = Math.trunc(step);
+
+	if (safeStep < 1 || Number.isNaN(safeStep)) return result;
+
+	while (current.getTime() <= end.getTime()) {
+		result.push(new Date(current));
+
+		current.setMinutes(current.getMinutes() + safeStep);
+	}
+
+	return result;
+}
+
+function eachHourOfInterval(interval: DateInterval, step: number = 1): Date[] {
+	const result: Date[] = [];
+	const start = startOfHour(toDate(interval.start));
+	const end = startOfHour(toDate(interval.end));
+	const current = new Date(start);
+	const safeStep = Math.trunc(step);
+
+	if (safeStep < 1 || Number.isNaN(safeStep)) return result;
+
+	while (current.getTime() <= end.getTime()) {
+		result.push(new Date(current));
+
+		current.setHours(current.getHours() + safeStep);
+	}
+
+	return result;
+}
+
 function eachDayOfInterval(interval: DateInterval): Date[] {
 	const result: Date[] = [];
 	const start = startOfDay(toDate(interval.start));
@@ -549,6 +581,50 @@ function durationToMilliseconds(duration: Duration): number {
 	);
 }
 
+function getOverlappingDaysInInterval(
+	intervalLeft: DateInterval,
+	intervalRight: DateInterval,
+): number {
+	const leftStart = toDate(intervalLeft.start);
+	const leftEnd = toDate(intervalLeft.end);
+	const rightStart = toDate(intervalRight.start);
+	const rightEnd = toDate(intervalRight.end);
+
+	if (
+		!isValid(leftStart) ||
+		!isValid(leftEnd) ||
+		!isValid(rightStart) ||
+		!isValid(rightEnd)
+	) {
+		return NaN;
+	}
+
+	const leftStartTime = leftStart.getTime();
+	const leftEndTime = leftEnd.getTime();
+	const rightStartTime = rightStart.getTime();
+	const rightEndTime = rightEnd.getTime();
+
+	const [lStart, lEnd] =
+		leftStartTime <= leftEndTime ?
+			[leftStartTime, leftEndTime]
+		:	[leftEndTime, leftStartTime];
+	const [rStart, rEnd] =
+		rightStartTime <= rightEndTime ?
+			[rightStartTime, rightEndTime]
+		:	[rightEndTime, rightStartTime];
+
+	const isOverlapping = lStart < rEnd && lEnd > rStart;
+
+	if (!isOverlapping) {
+		return 0;
+	}
+
+	const overlapStart = lStart < rStart ? rStart : lStart;
+	const overlapEnd = lEnd > rEnd ? rEnd : lEnd;
+
+	return Math.ceil((overlapEnd - overlapStart) / MS_PER_DAY);
+}
+
 export {
 	addBusinessDays,
 	addDays,
@@ -572,6 +648,8 @@ export {
 	differenceInYears,
 	durationToMilliseconds,
 	eachDayOfInterval,
+	eachHourOfInterval,
+	eachMinuteOfInterval,
 	eachMonthOfInterval,
 	eachWeekOfInterval,
 	eachYearOfInterval,
@@ -584,6 +662,7 @@ export {
 	endOfYear,
 	fromUnixTime,
 	getISOWeek,
+	getOverlappingDaysInInterval,
 	intervalToDuration,
 	max,
 	min,

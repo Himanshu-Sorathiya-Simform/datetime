@@ -78,6 +78,8 @@ Pure boolean functions. No date values are ever returned here — only `true` or
 | `isBefore(date, compareDate)` | Strict millisecond comparison. |
 | `isAfter(date, compareDate)` | Strict millisecond comparison. |
 | `isEqual(a, b)` | Fixes native `Date` object-reference inequality by comparing timestamps. |
+| `compareAsc(left, right)` | Array sort comparator: returns `-1`, `0`, or `1`. |
+| `compareDesc(left, right)` | Reverse array sort comparator: returns `1`, `0`, or `-1`. |
 | `isWithinRange(date, start, end)` | Inclusive. **Auto-swaps an inverted `start`/`end`** instead of returning `false`. |
 | `isOverlapping(rangeA, rangeB)` | Strict — exact boundary touches (`rangeA.end === rangeB.start`) return `false`. |
 | `isToday(date)` | Local timezone. |
@@ -149,6 +151,7 @@ Date arithmetic, field setters, period snapping, difference calculations, and ra
 | `differenceInWeeks` | `Math.trunc(differenceInDays / 7)`. |
 | `differenceInMonths` | Returns only **completed** months (Jan 31 → Feb 1 is `0`, not `1`). |
 | `differenceInYears` | Returns only **completed** years; correctly handles Feb 29 birthdays. |
+| `getOverlappingDaysInInterval(left, right)` | Calculates the number of overlapping 24-hour periods between two `DateInterval`s. |
 
 **Business Days** (weekends excluded — no holiday calendar)
 
@@ -165,6 +168,8 @@ Date arithmetic, field setters, period snapping, difference calculations, and ra
 | `min(dates[])` | Earliest date in the array. Returns `null` for an empty array. |
 | `max(dates[])` | Latest date in the array. Returns `null` for an empty array. |
 | `closestTo(date, datesArray[])` | Nearest date by absolute difference. Returns `null` for an empty array. |
+| `eachMinuteOfInterval(interval, step?)` | Generates a date for every `step` minute (defaults to 1). |
+| `eachHourOfInterval(interval, step?)` | Generates a date for every `step` hour (defaults to 1). |
 | `eachDayOfInterval(interval)` | Every calendar day, inclusive of both boundaries. |
 | `eachWeekOfInterval(interval, weekStartsOn?)` | First day of every week in the interval. |
 | `eachMonthOfInterval(interval)` | First day of every month in the interval. |
@@ -201,6 +206,11 @@ Locale-aware formatting and parsing powered entirely by the native `Intl` API.
 | `format(date, formatString, options?)` | Token-based pattern formatting (`"yyyy-MM-dd"`, etc.). Supports `'literal text'` escaping. |
 | `formatDate(date, locale?, options?)` | Thin wrapper over `Intl.DateTimeFormat` — use for strict, options-driven localization. |
 | `formatRelativeTime(date, baseDate?, locale?)` | Wraps `Intl.RelativeTimeFormat`; auto-selects the most meaningful unit (seconds → years). |
+| `formatDistance(date, baseDate, options?)` | "less than a minute", "about 2 hours", etc. Supports `addSuffix`. |
+| `formatDistanceStrict(date, baseDate, options?)` | Strict unit distance without fuzzy words. Enforces specific units and rounding. |
+| `formatDistanceToNow(date, options?)` | Convenience wrapper over `formatDistance` against current time. |
+| `formatDistanceIntl(date, baseDate, options?)` | `Intl`-powered exact relative time (e.g. "in 2 days", "3 hours ago"). |
+| `formatRelative(date, baseDate, options?)` | "Today at 2:00 PM", "Tomorrow at...", "Last Friday at...". |
 | `formatISO(date, options?)` | ISO 8601 using the **local** timezone offset, unlike native `toISOString()`. |
 | `formatRFC3339(date, options?)` | RFC 3339 — the internet-protocol profile of ISO 8601. Outputs `"Z"` for UTC offset. |
 | `formatISO9075(date, options?)` | The SQL datetime standard (space separator, no offset) used by Postgres/MySQL/SQLite. |

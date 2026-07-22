@@ -3,19 +3,43 @@ import {
 	DURATION_LABELS,
 	DURATION_UNIT_KEYS,
 	FORMAT_REGEX,
+	ISO_8601_REGEX,
+	MS_PER_DAY,
+	MS_PER_HOUR,
+	MS_PER_MINUTE,
+	MS_PER_SECOND,
 	RFC2822_DAYS,
 	RFC2822_MONTHS,
+	ROUNDERS,
 	TOKEN_FORMATTERS,
 } from './constants.js';
-import { isValid, toDate } from './core';
-import { _tzParts } from './internals.js';
+import { getTimestamp, isValid, toDate } from './core';
+import {
+	_tzParts,
+	applySuffix,
+	formatUnderAMinute,
+	pluralize,
+	resolveIntlUnit,
+} from './internals.js';
 import {
 	differenceInDays,
 	differenceInHours,
 	differenceInMinutes,
+	differenceInMonths,
 	differenceInSeconds,
+	differenceInYears,
+	startOfWeek,
 } from './manipulation';
-import type { DateInput, Duration } from './types';
+import type {
+	DateInput,
+	Duration,
+	FormatDistanceIntlOptions,
+	FormatDistanceOptions,
+	FormatDistanceStrictOptions,
+	FormatDistanceStrictUnit,
+	FormatDistanceToNowOptions,
+	FormatRelativeOptions,
+} from './types';
 
 function format(
 	date: DateInput,
@@ -42,7 +66,7 @@ function format(
 
 function formatDate(
 	date: DateInput,
-	locale: string = 'default',
+	locale: string | string[] = 'default',
 	options: Intl.DateTimeFormatOptions = {},
 ): string {
 	const d = toDate(date);
@@ -55,7 +79,7 @@ function formatDate(
 function formatRelativeTime(
 	date: DateInput,
 	baseDate: DateInput = new Date(),
-	locale: string = 'default',
+	locale: string | string[] = 'default',
 ): string {
 	const d = toDate(date);
 	const base = toDate(baseDate);
@@ -226,9 +250,6 @@ function toISOString(date: DateInput): string {
 	return d.toISOString();
 }
 
-const ISO_8601_REGEX =
-	/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/;
-
 function parseISO(isoString: string): Date {
 	if (!ISO_8601_REGEX.test(isoString.trim())) {
 		return new Date(NaN);
@@ -237,12 +258,208 @@ function parseISO(isoString: string): Date {
 	return new Date(isoString);
 }
 
+function formatDistance(
+	date: DateInput,
+	baseDate: DateInput,
+	options: FormatDistanceOptions = {},
+): string {
+	const target = toDate(date);
+	const base = toDate(baseDate);
+
+	if (!isValid(target) || !isValid(base)) {
+		return 'Invalid Date';
+	}
+
+	const { addSuffix = false, includeSeconds = false } = options;
+
+	const diffMs = getTimestamp(target) - getTimestamp(base);
+	const isFuture = diffMs > 0;
+	const absMs = Math.abs(diffMs);
+
+	const seconds = absMs / MS_PER_SECOND;
+	const minutes = absMs / MS_PER_MINUTE;
+	const hours = absMs / MS_PER_HOUR;
+	const days = absMs / MS_PER_DAY;
+
+	let result: string;
+
+	if (seconds < 45) {
+		result = includeSeconds ? formatUnderAMinute(seconds) : 'less than a minute';
+	} else if (seconds < 90) {
+		result = 'a minute';
+	} else if (minutes < 45) {
+		result = `${Math.round(minutes)} minutes`;
+	} else if (minutes < 90) {
+		result = 'about an hour';
+	} else if (hours < 22) {
+		result = `about ${Math.round(hours)} hours`;
+	} else if (hours < 42) {
+		result = 'a day';
+	} else if (days < 27) {
+		result = `${Math.round(hours / 24)} days`;
+	} else {
+		const rawMonths = Math.abs(differenceInMonths(target, base));
+		const months = Math.max(rawMonths, 1);
+
+		if (months < 12) {
+			result = months === 1 ? 'about a month' : `about ${months} months`;
+		} else {
+			const years = Math.round(months / 12);
+			result = years === 1 ? 'about a year' : `about ${years} years`;
+		}
+	}
+
+	return applySuffix(result, isFuture, addSuffix);
+}
+
+function formatDistanceStrict(
+	date: DateInput,
+	baseDate: DateInput,
+	options: FormatDistanceStrictOptions = {},
+): string {
+	const target = toDate(date);
+	const base = toDate(baseDate);
+
+	if (!isValid(target) || !isValid(base)) {
+		return 'Invalid Date';
+	}
+
+	const { addSuffix = false, unit, roundingMethod = 'round' } = options;
+	const round = ROUNDERS[roundingMethod];
+
+	const diffMs = getTimestamp(target) - getTimestamp(base);
+	const isFuture = diffMs > 0;
+	const absMs = Math.abs(diffMs);
+
+	let resolvedUnit: FormatDistanceStrictUnit;
+	let count: number;
+
+	if (
+		unit === 'year' ||
+		(!unit && Math.abs(differenceInYears(target, base)) >= 1)
+	) {
+		resolvedUnit = 'year';
+		count = Math.abs(differenceInYears(target, base));
+	} else if (
+		unit === 'month' ||
+		(!unit && Math.abs(differenceInMonths(target, base)) >= 1)
+	) {
+		resolvedUnit = 'month';
+		count = Math.abs(differenceInMonths(target, base));
+	} else if (
+		unit === 'day' ||
+		(!unit && Math.abs(differenceInDays(target, base)) >= 1)
+	) {
+		resolvedUnit = 'day';
+		count = Math.abs(differenceInDays(target, base));
+	} else if (unit === 'hour' || (!unit && absMs >= MS_PER_HOUR)) {
+		resolvedUnit = 'hour';
+		count = round(absMs / MS_PER_HOUR);
+	} else if (unit === 'minute' || (!unit && absMs >= MS_PER_MINUTE)) {
+		resolvedUnit = 'minute';
+		count = round(absMs / MS_PER_MINUTE);
+	} else {
+		resolvedUnit = 'second';
+		count = round(absMs / MS_PER_SECOND);
+	}
+
+	const text = pluralize(count, resolvedUnit);
+
+	return applySuffix(text, isFuture, addSuffix);
+}
+
+function formatDistanceToNow(
+	date: DateInput,
+	options: FormatDistanceToNowOptions = {},
+): string {
+	return formatDistance(date, new Date(), options);
+}
+
+function formatDistanceIntl(
+	date: DateInput,
+	baseDate: DateInput,
+	options: FormatDistanceIntlOptions = {},
+): string {
+	const target = toDate(date);
+	const base = toDate(baseDate);
+
+	if (!isValid(target) || !isValid(base)) {
+		return 'Invalid Date';
+	}
+
+	const { locale, numeric = 'auto', style = 'long', unit } = options;
+	const { unit: resolvedUnit, count } = resolveIntlUnit(target, base, unit);
+
+	if (
+		typeof Intl === 'undefined' ||
+		typeof Intl.RelativeTimeFormat === 'undefined'
+	) {
+		const text = pluralize(Math.abs(count), resolvedUnit);
+		return applySuffix(text, count > 0, true);
+	}
+
+	let formatter: Intl.RelativeTimeFormat;
+	try {
+		formatter = new Intl.RelativeTimeFormat(locale, { numeric, style });
+	} catch {
+		formatter = new Intl.RelativeTimeFormat(undefined, { numeric, style });
+	}
+
+	return formatter.format(count, resolvedUnit as Intl.RelativeTimeFormatUnit);
+}
+
+function formatRelative(
+	date: DateInput,
+	baseDate: DateInput,
+	options: FormatRelativeOptions = {},
+): string {
+	const target = toDate(date);
+	const base = toDate(baseDate);
+
+	if (!isValid(target) || !isValid(base)) {
+		return 'Invalid Date';
+	}
+
+	const {
+		weekStartsOn = 0,
+		timeFormat = 'h:mm a',
+		fallbackFormat,
+		locale,
+	} = options;
+
+	const dayDiff = differenceInDays(target, base);
+	const timeStr = format(target, timeFormat);
+
+	if (dayDiff === 0) return `Today at ${timeStr}`;
+	if (dayDiff === 1) return `Tomorrow at ${timeStr}`;
+	if (dayDiff === -1) return `Yesterday at ${timeStr}`;
+
+	const targetWeekStart = startOfWeek(target, weekStartsOn);
+	const baseWeekStart = startOfWeek(base, weekStartsOn);
+	const weekStartDiff = differenceInDays(targetWeekStart, baseWeekStart);
+
+	const weekday = format(target, 'EEEE');
+
+	if (weekStartDiff === 0) return `${weekday} at ${timeStr}`;
+	if (weekStartDiff === 7) return `Next ${weekday} at ${timeStr}`;
+	if (weekStartDiff === -7) return `Last ${weekday} at ${timeStr}`;
+
+	return fallbackFormat ?
+			format(target, fallbackFormat)
+		:	formatDate(target, locale);
+}
+
 export {
 	format,
 	formatDate,
+	formatDistance,
+	formatDistanceIntl,
+	formatDistanceStrict,
+	formatDistanceToNow,
 	formatDuration,
 	formatISO,
 	formatISO9075,
+	formatRelative,
 	formatRelativeTime,
 	formatRFC2822,
 	formatRFC3339,
