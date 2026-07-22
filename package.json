@@ -1,0 +1,33 @@
+{
+	"name": "@himanshu-sorathiya/datetime",
+	"version": "0.0.0",
+	"description": "A fully type safe and runtime safe Date & Time utilities library with rich set of APIs.",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"lint": "eslint .",
+		"preview": "vite preview",
+		"format": "prettier . --write"
+	},
+	"devDependencies": {
+		"@types/node": "^26.1.1",
+		"prettier": "^3.9.6",
+		"typescript": "~6.0.2",
+		"vite": "^8.1.1",
+		"vite-plugin-dts": "^5.0.3"
+	}
+}
