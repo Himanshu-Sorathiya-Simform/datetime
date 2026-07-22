@@ -114,3 +114,16 @@ export {
 	subYears,
 	toUnixTime,
 } from './manipulation.js';
+
+export {
+	format,
+	formatDate,
+	formatDuration,
+	formatISO,
+	formatISO9075,
+	formatRelativeTime,
+	formatRFC2822,
+	formatRFC3339,
+	parseISO,
+	toISOString,
+} from './format.js';

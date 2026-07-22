@@ -113,6 +113,7 @@ const DURATION_LABELS: Readonly<Record<keyof Duration, [string, string]>> = {
 };
 
 export {
+	type FormatToken,
 	DURATION_LABELS,
 	DURATION_UNIT_KEYS,
 	FORMAT_REGEX,
