@@ -8,6 +8,10 @@ const MS_PER_MINUTE = 60_000;
 const MS_PER_HOUR = 3_600_000;
 const MS_PER_DAY = 86_400_000;
 
+const AVG_DAYS_IN_MONTH = 30.44;
+const ALMOST_A_DAY_HOURS = 42;
+const ALMOST_A_MONTH_DAYS = 27;
+
 const TOKEN_FORMATTERS = {
 	yyyy: (d: Date) => String(d.getFullYear()).padStart(4, "0"),
 	yy: (d: Date) => String(d.getFullYear()).slice(-2),
@@ -127,6 +131,9 @@ const ROUNDERS: Record<RoundingMethod, (n: number) => number> = {
 };
 
 export {
+	ALMOST_A_DAY_HOURS,
+	ALMOST_A_MONTH_DAYS,
+	AVG_DAYS_IN_MONTH,
 	DURATION_LABELS,
 	DURATION_UNIT_KEYS,
 	FORMAT_REGEX,

@@ -1,6 +1,13 @@
-import { MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND } from "./constants";
+import {
+	AVG_DAYS_IN_MONTH,
+	MS_PER_HOUR,
+	MS_PER_MINUTE,
+	MS_PER_SECOND,
+} from "./constants";
 import { getTimestamp } from "./core";
 import {
+	addMonths,
+	addYears,
 	differenceInDays,
 	differenceInMonths,
 	differenceInWeeks,
@@ -118,11 +125,51 @@ function resolveIntlUnit(
 	return { unit: "second", count: Math.round(diffMs / MS_PER_SECOND) };
 }
 
+function monthHedge(target: Date, base: Date, completedMonths: number): string {
+	const remainderStart = addMonths(base, completedMonths);
+	const remainderDays = Math.abs(differenceInDays(target, remainderStart));
+	const remainderRatio = remainderDays / AVG_DAYS_IN_MONTH;
+
+	if (remainderRatio <= 0.1) {
+		return completedMonths === 1 ? "about a month" : (
+				`about ${completedMonths} months`
+			);
+	}
+
+	if (remainderRatio >= 0.85) {
+		const n = completedMonths + 1;
+		return n === 1 ? "almost a month" : `almost ${n} months`;
+	}
+
+	return completedMonths === 1 ? "over a month" : `over ${completedMonths} months`;
+}
+
+function yearHedge(target: Date, base: Date, completedYears: number): string {
+	const remainderStart = addYears(base, completedYears);
+	const remainderMonths = Math.abs(differenceInMonths(target, remainderStart));
+	const remainderRatio = remainderMonths / 12;
+
+	if (remainderRatio <= 0.1) {
+		return completedYears === 1 ? "about a year" : (
+				`about ${completedYears} years`
+			);
+	}
+
+	if (remainderRatio >= 0.85) {
+		const n = completedYears + 1;
+		return n === 1 ? "almost a year" : `almost ${n} years`;
+	}
+
+	return completedYears === 1 ? "over a year" : `over ${completedYears} years`;
+}
+
 export {
 	_startOfWeekForDate,
 	_tzParts,
 	applySuffix,
 	formatUnderAMinute,
+	monthHedge,
 	pluralize,
 	resolveIntlUnit,
+	yearHedge,
 };

@@ -1,5 +1,7 @@
 import {
 	type FormatToken,
+	ALMOST_A_DAY_HOURS,
+	ALMOST_A_MONTH_DAYS,
 	DURATION_LABELS,
 	DURATION_UNIT_KEYS,
 	FORMAT_REGEX,
@@ -18,8 +20,10 @@ import {
 	_tzParts,
 	applySuffix,
 	formatUnderAMinute,
+	monthHedge,
 	pluralize,
 	resolveIntlUnit,
+	yearHedge,
 } from "./internals.js";
 import {
 	differenceInDays,
@@ -293,19 +297,20 @@ function formatDistance(
 		result = "about an hour";
 	} else if (hours < 22) {
 		result = `about ${Math.round(hours)} hours`;
-	} else if (hours < 42) {
+	} else if (hours < ALMOST_A_DAY_HOURS) {
 		result = "a day";
-	} else if (days < 27) {
+	} else if (days < ALMOST_A_MONTH_DAYS) {
 		result = `${Math.round(hours / 24)} days`;
 	} else {
-		const rawMonths = Math.abs(differenceInMonths(target, base));
-		const months = Math.max(rawMonths, 1);
+		const completedMonths = Math.abs(differenceInMonths(target, base));
 
-		if (months < 12) {
-			result = months === 1 ? "about a month" : `about ${months} months`;
+		if (completedMonths < 1) {
+			result = "almost a month";
+		} else if (completedMonths < 12) {
+			result = monthHedge(target, base, completedMonths);
 		} else {
-			const years = Math.round(months / 12);
-			result = years === 1 ? "about a year" : `about ${years} years`;
+			const completedYears = Math.abs(differenceInYears(target, base));
+			result = yearHedge(target, base, completedYears);
 		}
 	}
 
