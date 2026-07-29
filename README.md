@@ -17,16 +17,13 @@ This module takes a different approach — a flat set of small, composable funct
 ## Import Syntax
 
 ```tsx
-// Preferred
-import { toDate, addDays, format, isPast } from "@himanshu-sorathiya/react-kit/datetime";
-// Or
-import { toDate, addDays, format, isPast } from "@himanshu-sorathiya/react-kit";
+import { toDate, addDays, format, isPast } from "@himanshu-sorathiya/datetime";
 ```
 
 ## Basic Usage
 
 ```ts
-import { toDate, addDays, format } from "@himanshu-sorathiya/react-kit/datetime";
+import { toDate, addDays, format } from "@himanshu-sorathiya/datetime";
 
 const input = toDate("2026-07-16"); // parsed once, safely
 const dueDate = addDays(input, 14); // 14 days later, DST-safe
@@ -80,6 +77,7 @@ Pure boolean functions. No date values are ever returned here — only `true` or
 | `isSameSecond(a, b)` | Checks full date + H:M:S. |
 | `isSameTime(a, b)` | Checks H:M:S only — ignores the calendar date entirely. |
 | `isBefore(date, compareDate)` | Strict millisecond comparison. |
+| `isBetween(date, start, end, options?)` | Inclusive/exclusive bounded range check (supports `[]`, `()`, `[)`, `(]`). |
 | `isAfter(date, compareDate)` | Strict millisecond comparison. |
 | `isSameOrBefore(date, compareDate)` | Inclusive boundary check. |
 | `isSameOrAfter(date, compareDate)` | Inclusive boundary check. |
@@ -163,27 +161,29 @@ Date arithmetic, field setters, period snapping, difference calculations, and ra
 | `differenceInYears` | Returns only **completed** years; correctly handles Feb 29 birthdays. |
 | `getOverlappingDaysInInterval(left, right)` | Calculates the number of overlapping 24-hour periods between two `DateInterval`s. |
 
-**Business Days** (weekends excluded — no holiday calendar)
+**Business Time** (weekends and typical non-business hours excluded — no holiday calendar)
 
 | Function | Notes |
 | --- | --- |
 | `addBusinessDays(date, amount)` | Traverses one day at a time skipping Sat/Sun. Negative amounts traverse backward. |
+| `addBusinessHours(date, amount)` | Skips Sat/Sun and typical non-business hours (before 9am and 5pm+). |
 | `differenceInBusinessDays(left, right)` | O(n % 7) — counts full weeks as 5 days each, then iterates the remainder. |
+| `differenceInBusinessHours(left, right)` | Calculates the number of working 9-5 hours between two dates. |
 
 **Range & Array**
 
 | Function | Notes |
 | --- | --- |
 | `clampDate(date, min, max)` | Enforces `minDate` / `maxDate` picker constraints without mutation. |
-| `min(dates[])` | Earliest date in the array. Returns `null` for an empty array. |
-| `max(dates[])` | Latest date in the array. Returns `null` for an empty array. |
+| `min(datesArray[])` | Earliest date in the array. Accepts `DateInput[]`. Returns `null` for an empty array. |
+| `max(datesArray[])` | Latest date in the array. Accepts `DateInput[]`. Returns `null` for an empty array. |
 | `closestTo(date, datesArray[])` | Nearest date by absolute difference. Returns `null` for an empty array. |
 | `eachMinuteOfInterval(interval, step?)` | Generates a date for every `step` minute (defaults to 1). |
 | `eachHourOfInterval(interval, step?)` | Generates a date for every `step` hour (defaults to 1). |
-| `eachDayOfInterval(interval)` | Every calendar day, inclusive of both boundaries. |
-| `eachWeekOfInterval(interval, weekStartsOn?)` | First day of every week in the interval. |
-| `eachMonthOfInterval(interval)` | First day of every month in the interval. |
-| `eachYearOfInterval(interval)` | January 1st of every year in the interval. |
+| `eachDayOfInterval(interval, step?)` | Every calendar day, inclusive of both boundaries. |
+| `eachWeekOfInterval(interval, options?)` | First day of every week. Options support `step` and `weekStartsOn`. |
+| `eachMonthOfInterval(interval, step?)` | First day of every month in the interval. |
+| `eachYearOfInterval(interval, step?)` | January 1st of every year in the interval. |
 
 **Unix Timestamps**
 
@@ -224,6 +224,7 @@ Locale-aware formatting and parsing powered entirely by the native `Intl` API.
 | `formatDistanceStrict(date, baseDate, options?)` | Strict unit distance without fuzzy words. Enforces specific units and rounding. |
 | `formatDistanceToNow(date, options?)` | Convenience wrapper over `formatDistance` against current time. |
 | `formatDistanceIntl(date, baseDate, options?)` | `Intl`-powered exact relative time (e.g. "in 2 days", "3 hours ago"). |
+| `formatInTimeZone(date, formatString, timeZone, options?)` | Uses `Intl.DateTimeFormat` internally to shift time to `timeZone` before formatting. |
 | `formatRelative(date, baseDate, options?)` | "Today at 2:00 PM", "Tomorrow at...", "Last Friday at...". |
 | `formatISO(date, options?)` | ISO 8601 using the **local** timezone offset, unlike native `toISOString()`. |
 | `formatRFC3339(date, options?)` | RFC 3339 — the internet-protocol profile of ISO 8601. Outputs `"Z"` for UTC offset. |
@@ -244,7 +245,7 @@ import {
   startOfWeek,
   addBusinessDays,
   format,
-} from "@himanshu-sorathiya/react-kit/datetime";
+} from "@himanshu-sorathiya/datetime";
 
 const today = new Date();
 

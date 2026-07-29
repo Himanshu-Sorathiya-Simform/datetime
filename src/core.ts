@@ -99,6 +99,7 @@ function getDaysInYear(date: DateInput): number {
 	if (!isValid(d)) return NaN;
 
 	const year = d.getFullYear();
+
 	return year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0) ? 366 : 365;
 }
 

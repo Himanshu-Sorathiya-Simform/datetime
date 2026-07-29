@@ -4,6 +4,7 @@ import type {
 	DateInput,
 	DateInterval,
 	DateValues,
+	DayOfWeek,
 	Duration,
 	WeekStartsOn,
 } from "./types";
@@ -143,7 +144,7 @@ function set(date: DateInput, values: DateValues): Date {
 
 function setDay(
 	date: DateInput,
-	dayOfWeek: number,
+	dayOfWeek: DayOfWeek,
 	options?: { weekStartsOn?: WeekStartsOn },
 ): Date {
 	const d = toDate(date);
@@ -429,7 +430,7 @@ function differenceInYears(dateLeft: DateInput, dateRight: DateInput): number {
 	return yearDiff;
 }
 
-function nextDay(date: DateInput, dayOfWeek: number): Date {
+function nextDay(date: DateInput, dayOfWeek: DayOfWeek): Date {
 	const d = toDate(date);
 
 	if (!isValid(d)) return new Date(NaN);
@@ -441,7 +442,7 @@ function nextDay(date: DateInput, dayOfWeek: number): Date {
 	return addDays(d, increment);
 }
 
-function previousDay(date: DateInput, dayOfWeek: number): Date {
+function previousDay(date: DateInput, dayOfWeek: DayOfWeek): Date {
 	const d = toDate(date);
 
 	if (!isValid(d)) return new Date(NaN);
@@ -464,6 +465,28 @@ function addBusinessDays(date: DateInput, amount: number): Date {
 		const day = d.getDay();
 
 		if (day !== 0 && day !== 6) {
+			remaining--;
+		}
+	}
+
+	return d;
+}
+
+function addBusinessHours(date: DateInput, amount: number): Date {
+	let d = toDate(date);
+	if (!isValid(d)) return new Date(NaN);
+
+	const sign = amount < 0 ? -1 : 1;
+	let remaining = Math.abs(amount);
+
+	while (remaining > 0) {
+		d.setTime(d.getTime() + sign * MS_PER_HOUR);
+
+		const day = d.getDay();
+		const hours = d.getHours();
+
+		// Typical 9-5 business hours check
+		if (day !== 0 && day !== 6 && hours >= 9 && hours < 17) {
 			remaining--;
 		}
 	}
@@ -501,6 +524,36 @@ function differenceInBusinessDays(
 	return businessDays * sign;
 }
 
+function differenceInBusinessHours(
+	dateLeft: DateInput,
+	dateRight: DateInput,
+): number {
+	const left = toDate(dateLeft);
+	const right = toDate(dateRight);
+
+	if (!isValid(left) || !isValid(right)) return NaN;
+
+	const sign = left.getTime() > right.getTime() ? 1 : -1;
+	const start = sign > 0 ? right : left;
+	const end = sign > 0 ? left : right;
+
+	let current = new Date(start.getTime());
+	let businessHours = 0;
+
+	while (current.getTime() < end.getTime()) {
+		const day = current.getDay();
+		const hours = current.getHours();
+
+		if (day !== 0 && day !== 6 && hours >= 9 && hours < 17) {
+			businessHours++;
+		}
+
+		current.setTime(current.getTime() + MS_PER_HOUR);
+	}
+
+	return businessHours * sign;
+}
+
 function clampDate(date: DateInput, min: DateInput, max: DateInput): Date {
 	const d = toDate(date);
 	const minD = toDate(min);
@@ -515,16 +568,30 @@ function clampDate(date: DateInput, min: DateInput, max: DateInput): Date {
 	return d;
 }
 
-function min(dates: Date[]): Date | null {
+function min(dates: DateInput[]): Date | null {
 	if (dates.length === 0) return null;
 
-	return new Date(Math.min(...dates.map((d) => d.getTime())));
+	return new Date(
+		Math.min(
+			...dates.map((d) => {
+				const parsed = toDate(d);
+				return isValid(parsed) ? parsed.getTime() : NaN;
+			}),
+		),
+	);
 }
 
-function max(dates: Date[]): Date | null {
+function max(dates: DateInput[]): Date | null {
 	if (dates.length === 0) return null;
 
-	return new Date(Math.max(...dates.map((d) => d.getTime())));
+	return new Date(
+		Math.max(
+			...dates.map((d) => {
+				const parsed = toDate(d);
+				return isValid(parsed) ? parsed.getTime() : NaN;
+			}),
+		),
+	);
 }
 
 function closestTo(date: DateInput, datesArray: Date[]): Date | null {
@@ -580,16 +647,19 @@ function eachHourOfInterval(interval: DateInterval, step: number = 1): Date[] {
 	return result;
 }
 
-function eachDayOfInterval(interval: DateInterval): Date[] {
+function eachDayOfInterval(interval: DateInterval, step: number = 1): Date[] {
 	const result: Date[] = [];
 	const start = startOfDay(toDate(interval.start));
 	const end = startOfDay(toDate(interval.end));
 	const current = new Date(start);
+	const safeStep = Math.trunc(step);
+
+	if (safeStep < 1 || Number.isNaN(safeStep)) return result;
 
 	while (current.getTime() <= end.getTime()) {
 		result.push(new Date(current));
 
-		current.setDate(current.getDate() + 1);
+		current.setDate(current.getDate() + safeStep);
 	}
 
 	return result;
@@ -597,9 +667,14 @@ function eachDayOfInterval(interval: DateInterval): Date[] {
 
 function eachWeekOfInterval(
 	interval: DateInterval,
-	weekStartsOn: WeekStartsOn = 0,
+	options: { weekStartsOn?: WeekStartsOn; step?: number } = {},
 ): Date[] {
 	const result: Date[] = [];
+	const weekStartsOn = options.weekStartsOn ?? 0;
+	const safeStep = Math.trunc(options.step ?? 1);
+
+	if (safeStep < 1 || Number.isNaN(safeStep)) return result;
+
 	const start = startOfWeek(toDate(interval.start), weekStartsOn);
 	const end = startOfWeek(toDate(interval.end), weekStartsOn);
 	const current = new Date(start);
@@ -607,37 +682,43 @@ function eachWeekOfInterval(
 	while (current.getTime() <= end.getTime()) {
 		result.push(new Date(current));
 
-		current.setDate(current.getDate() + 7);
+		current.setDate(current.getDate() + 7 * safeStep);
 	}
 
 	return result;
 }
 
-function eachMonthOfInterval(interval: DateInterval): Date[] {
+function eachMonthOfInterval(interval: DateInterval, step: number = 1): Date[] {
 	const result: Date[] = [];
 	const start = startOfMonth(toDate(interval.start));
 	const end = startOfMonth(toDate(interval.end));
 	const current = new Date(start);
+	const safeStep = Math.trunc(step);
+
+	if (safeStep < 1 || Number.isNaN(safeStep)) return result;
 
 	while (current.getTime() <= end.getTime()) {
 		result.push(new Date(current));
 
-		current.setMonth(current.getMonth() + 1);
+		current.setMonth(current.getMonth() + safeStep);
 	}
 
 	return result;
 }
 
-function eachYearOfInterval(interval: DateInterval): Date[] {
+function eachYearOfInterval(interval: DateInterval, step: number = 1): Date[] {
 	const result: Date[] = [];
 	const start = startOfYear(toDate(interval.start));
 	const end = startOfYear(toDate(interval.end));
 	const current = new Date(start);
+	const safeStep = Math.trunc(step);
+
+	if (safeStep < 1 || Number.isNaN(safeStep)) return result;
 
 	while (current.getTime() <= end.getTime()) {
 		result.push(new Date(current));
 
-		current.setFullYear(current.getFullYear() + 1);
+		current.setFullYear(current.getFullYear() + safeStep);
 	}
 
 	return result;
@@ -846,6 +927,7 @@ function getOverlappingDaysInInterval(
 export {
 	add,
 	addBusinessDays,
+	addBusinessHours,
 	addDays,
 	addHours,
 	addMilliseconds,
@@ -857,6 +939,7 @@ export {
 	clampDate,
 	closestTo,
 	differenceInBusinessDays,
+	differenceInBusinessHours,
 	differenceInDays,
 	differenceInHours,
 	differenceInMilliseconds,

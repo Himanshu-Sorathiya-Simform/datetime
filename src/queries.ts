@@ -1,7 +1,7 @@
 import { isValid, toDate } from "./core";
 import { _startOfWeekForDate } from "./internals";
 import { getISOWeekYear } from "./manipulation";
-import type { DateInput, DateRange, WeekStartsOn } from "./types";
+import type { DateInput, DateRange, IsBetweenOptions, WeekStartsOn } from "./types";
 
 function isSameDay(dateA: DateInput, dateB: DateInput): boolean {
 	const a = toDate(dateA);
@@ -216,20 +216,48 @@ function isWithinRange(date: DateInput, start: DateInput, end: DateInput): boole
 	return d.getTime() >= s.getTime() && d.getTime() <= e.getTime();
 }
 
+function isBetween(
+	date: DateInput,
+	start: DateInput,
+	end: DateInput,
+	options: IsBetweenOptions = {},
+): boolean {
+	const d = toDate(date);
+	let s = toDate(start);
+	let e = toDate(end);
+
+	if (!isValid(d) || !isValid(s) || !isValid(e)) return false;
+
+	if (s.getTime() > e.getTime()) {
+		[s, e] = [e, s];
+	}
+
+	const inclusivity = options.inclusivity ?? "[]";
+
+	switch (inclusivity) {
+		case "()":
+			return d.getTime() > s.getTime() && d.getTime() < e.getTime();
+		case "[)":
+			return d.getTime() >= s.getTime() && d.getTime() < e.getTime();
+		case "(]":
+			return d.getTime() > s.getTime() && d.getTime() <= e.getTime();
+		case "[]":
+		default:
+			return d.getTime() >= s.getTime() && d.getTime() <= e.getTime();
+	}
+}
+
 function isOverlapping(rangeA: DateRange, rangeB: DateRange): boolean {
-	if (
-		!isValid(rangeA.start)
-		|| !isValid(rangeA.end)
-		|| !isValid(rangeB.start)
-		|| !isValid(rangeB.end)
-	) {
+	const aStart = toDate(rangeA.start);
+	const aEnd = toDate(rangeA.end);
+	const bStart = toDate(rangeB.start);
+	const bEnd = toDate(rangeB.end);
+
+	if (!isValid(aStart) || !isValid(aEnd) || !isValid(bStart) || !isValid(bEnd)) {
 		return false;
 	}
 
-	return (
-		rangeA.start.getTime() < rangeB.end.getTime()
-		&& rangeA.end.getTime() > rangeB.start.getTime()
-	);
+	return aStart.getTime() < bEnd.getTime() && aEnd.getTime() > bStart.getTime();
 }
 
 function isToday(date: DateInput): boolean {
@@ -238,7 +266,6 @@ function isToday(date: DateInput): boolean {
 
 function isYesterday(date: DateInput): boolean {
 	const yesterday = new Date();
-
 	yesterday.setDate(yesterday.getDate() - 1);
 
 	return isSameDay(date, yesterday);
@@ -246,7 +273,6 @@ function isYesterday(date: DateInput): boolean {
 
 function isTomorrow(date: DateInput): boolean {
 	const tomorrow = new Date();
-
 	tomorrow.setDate(tomorrow.getDate() + 1);
 
 	return isSameDay(date, tomorrow);
@@ -294,7 +320,6 @@ function isLastDayOfMonth(date: DateInput): boolean {
 	if (!isValid(d)) return false;
 
 	const next = new Date(d);
-
 	next.setDate(next.getDate() + 1);
 
 	return next.getMonth() !== d.getMonth();
@@ -304,7 +329,6 @@ function isWeekend(date: DateInput): boolean {
 	const d = toDate(date);
 
 	if (!isValid(d)) return false;
-
 	const day = d.getDay();
 
 	return day === 0 || day === 6;
@@ -364,6 +388,7 @@ export {
 	isAfter,
 	isAM,
 	isBefore,
+	isBetween,
 	isEqual,
 	isFirstDayOfMonth,
 	isFuture,

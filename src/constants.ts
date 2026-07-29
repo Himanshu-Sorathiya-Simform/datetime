@@ -1,5 +1,5 @@
 import { getDayOfYear } from "./core.js";
-import { _tzParts } from "./internals.js";
+import { _safeIntlFormat, _safeIntlFormatParts, _tzParts } from "./internals.js";
 import { getISOWeek } from "./manipulation.js";
 import type { Duration, RoundingMethod } from "./types.js";
 
@@ -16,22 +16,17 @@ const TOKEN_FORMATTERS = {
 	yyyy: (d: Date) => String(d.getFullYear()).padStart(4, "0"),
 	yy: (d: Date) => String(d.getFullYear()).slice(-2),
 
-	MMMM: (d: Date, loc: string) =>
-		new Intl.DateTimeFormat(loc, { month: "long" }).format(d),
-	MMM: (d: Date, loc: string) =>
-		new Intl.DateTimeFormat(loc, { month: "short" }).format(d),
+	MMMM: (d: Date, loc: string) => _safeIntlFormat(d, loc, { month: "long" }),
+	MMM: (d: Date, loc: string) => _safeIntlFormat(d, loc, { month: "short" }),
 	MM: (d: Date) => String(d.getMonth() + 1).padStart(2, "0"),
 	M: (d: Date) => String(d.getMonth() + 1),
 
 	dd: (d: Date) => String(d.getDate()).padStart(2, "0"),
 	d: (d: Date) => String(d.getDate()),
 
-	EEEE: (d: Date, loc: string) =>
-		new Intl.DateTimeFormat(loc, { weekday: "long" }).format(d),
-	EEE: (d: Date, loc: string) =>
-		new Intl.DateTimeFormat(loc, { weekday: "short" }).format(d),
-	E: (d: Date, loc: string) =>
-		new Intl.DateTimeFormat(loc, { weekday: "short" }).format(d),
+	EEEE: (d: Date, loc: string) => _safeIntlFormat(d, loc, { weekday: "long" }),
+	EEE: (d: Date, loc: string) => _safeIntlFormat(d, loc, { weekday: "short" }),
+	E: (d: Date, loc: string) => _safeIntlFormat(d, loc, { weekday: "short" }),
 
 	HH: (d: Date) => String(d.getHours()).padStart(2, "0"),
 	H: (d: Date) => String(d.getHours()),
@@ -43,9 +38,7 @@ const TOKEN_FORMATTERS = {
 	SSS: (d: Date) => String(d.getMilliseconds()).padStart(3, "0"),
 
 	a: (d: Date, loc: string) =>
-		new Intl.DateTimeFormat(loc, { hour: "numeric", hour12: true })
-			.formatToParts(d)
-			.find((p) => p.type === "dayPeriod")?.value ?? "",
+		_safeIntlFormatParts(d, loc, { hour: "numeric", hour12: true }, "dayPeriod"),
 
 	Q: (d: Date) => String(Math.ceil((d.getMonth() + 1) / 3)),
 

@@ -1,16 +1,22 @@
 type DateInput = Date | number | string;
 
-type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+type WeekStartsOn = DayOfWeek;
 
 type DateInterval = {
-	start: Date;
-	end: Date;
+	start: DateInput;
+	end: DateInput;
 };
 
 type DateRange = {
-	start: Date;
-	end: Date;
+	start: DateInput;
+	end: DateInput;
 };
+
+interface IsBetweenOptions {
+	inclusivity?: "()" | "[]" | "[)" | "(]";
+}
 
 type Duration = {
 	years?: number;
@@ -71,6 +77,7 @@ export type {
 	DateInterval,
 	DateRange,
 	DateValues,
+	DayOfWeek,
 	Duration,
 	FormatDistanceIntlOptions,
 	FormatDistanceOptions,
@@ -78,6 +85,7 @@ export type {
 	FormatDistanceStrictUnit,
 	FormatDistanceToNowOptions,
 	FormatRelativeOptions,
+	IsBetweenOptions,
 	RelativeTimeUnit,
 	RoundingMethod,
 	WeekStartsOn,

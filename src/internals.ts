@@ -42,6 +42,39 @@ function _startOfWeekForDate(d: Date, weekStartsOn: WeekStartsOn): Date {
 	return result;
 }
 
+function _safeIntlFormat(
+	d: Date,
+	loc: string,
+	options: Intl.DateTimeFormatOptions,
+): string {
+	try {
+		return new Intl.DateTimeFormat(loc, options).format(d);
+	} catch {
+		return new Intl.DateTimeFormat("default", options).format(d);
+	}
+}
+
+function _safeIntlFormatParts(
+	d: Date,
+	loc: string,
+	options: Intl.DateTimeFormatOptions,
+	partType: string,
+): string {
+	try {
+		return (
+			new Intl.DateTimeFormat(loc, options)
+				.formatToParts(d)
+				.find((p) => p.type === partType)?.value ?? ""
+		);
+	} catch {
+		return (
+			new Intl.DateTimeFormat("default", options)
+				.formatToParts(d)
+				.find((p) => p.type === partType)?.value ?? ""
+		);
+	}
+}
+
 function formatUnderAMinute(seconds: number): string {
 	if (seconds < 5) return "less than 5 seconds";
 	if (seconds < 10) return "less than 10 seconds";
@@ -164,6 +197,8 @@ function yearHedge(target: Date, base: Date, completedYears: number): string {
 }
 
 export {
+	_safeIntlFormat,
+	_safeIntlFormatParts,
 	_startOfWeekForDate,
 	_tzParts,
 	applySuffix,
