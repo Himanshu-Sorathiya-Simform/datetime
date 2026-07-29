@@ -1,6 +1,6 @@
 {
 	"name": "@himanshu-sorathiya/datetime",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "A strictly client-side, fully type-safe, zero-dependency toolkit for parsing, querying, manipulating, and formatting dates in TypeScript. Every function is a pure, immutable transformation — no wrapper classes, no prototype patching, no hidden global state.",
 	"type": "module",
 	"main": "./dist/index.js",
