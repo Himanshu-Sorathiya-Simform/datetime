@@ -1,4 +1,7 @@
-import { _safeIntlFormat, _safeIntlFormatParts } from "../internals/_safeIntlFormat.js";
+import {
+	_safeIntlFormat,
+	_safeIntlFormatParts,
+} from "../internals/_safeIntlFormat.js";
 import { _tzParts } from "../internals/_tzParts.js";
 import type { Duration, RoundingMethod } from "../types/types.js";
 import { getDayOfYear, getISOWeek } from "../units/get.js";
@@ -139,5 +142,5 @@ export {
 	RFC2822_MONTHS,
 	ROUNDERS,
 	TOKEN_FORMATTERS,
-	type FormatToken
+	type FormatToken,
 };
