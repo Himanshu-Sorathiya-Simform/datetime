@@ -1,7 +1,7 @@
-import { getDayOfYear } from "./core.js";
-import { _safeIntlFormat, _safeIntlFormatParts, _tzParts } from "./internals.js";
-import { getISOWeek } from "./manipulation.js";
-import type { Duration, RoundingMethod } from "./types.js";
+import { _safeIntlFormat, _safeIntlFormatParts } from "../internals/_safeIntlFormat.js";
+import { _tzParts } from "../internals/_tzParts.js";
+import type { Duration, RoundingMethod } from "../types/types.js";
+import { getDayOfYear, getISOWeek } from "../units/get.js";
 
 const MS_PER_SECOND = 1_000;
 const MS_PER_MINUTE = 60_000;
@@ -139,5 +139,5 @@ export {
 	RFC2822_MONTHS,
 	ROUNDERS,
 	TOKEN_FORMATTERS,
-	type FormatToken,
+	type FormatToken
 };

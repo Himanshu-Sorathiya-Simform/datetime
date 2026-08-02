@@ -1,93 +1,9 @@
 export {
-	createDate,
-	getDate,
-	getDayOfWeek,
-	getDayOfYear,
-	getDaysInMonth,
-	getDaysInYear,
-	getHours,
-	getMilliseconds,
-	getMinutes,
-	getMonth,
-	getQuarter,
-	getSeconds,
-	getTimestamp,
-	getYear,
-	isDate,
-	isValid,
-	toDate,
-} from "./core.js";
-
-export {
-	compareAsc,
-	compareDesc,
-	isAfter,
-	isAM,
-	isBefore,
-	isBetween,
-	isEqual,
-	isFirstDayOfMonth,
-	isFuture,
-	isInLeapYear,
-	isLastDayOfMonth,
-	isLeapYear,
-	isOverlapping,
-	isPast,
-	isPM,
-	isSameDay,
-	isSameHour,
-	isSameISOWeekYear,
-	isSameMinute,
-	isSameMonth,
-	isSameOrAfter,
-	isSameOrBefore,
-	isSameQuarter,
-	isSameSecond,
-	isSameTime,
-	isSameWeek,
-	isSameYear,
-	isThisMonth,
-	isThisWeek,
-	isThisYear,
-	isToday,
-	isTomorrow,
-	isWeekday,
-	isWeekend,
-	isWithinRange,
-	isYesterday,
-} from "./queries.js";
-
-export {
-	add,
-	addBusinessDays,
-	addBusinessHours,
-	addDays,
-	addHours,
-	addMilliseconds,
-	addMinutes,
-	addMonths,
-	addSeconds,
-	addWeeks,
-	addYears,
 	clampDate,
-	closestTo,
-	differenceInBusinessDays,
-	differenceInBusinessHours,
-	differenceInDays,
-	differenceInHours,
-	differenceInMilliseconds,
-	differenceInMinutes,
-	differenceInMonths,
-	differenceInSeconds,
-	differenceInWeeks,
-	differenceInYears,
-	durationToMilliseconds,
-	eachDayOfInterval,
-	eachHourOfInterval,
-	eachMinuteOfInterval,
-	eachMonthOfInterval,
-	eachWeekOfInterval,
-	eachYearOfInterval,
+	roundToNearestHours,
+	roundToNearestMinutes,
+} from "./boundaries/clamp.js";
+export {
 	endOfDay,
 	endOfHour,
 	endOfISOWeekYear,
@@ -96,20 +12,160 @@ export {
 	endOfQuarter,
 	endOfWeek,
 	endOfYear,
-	fromUnixTime,
+} from "./boundaries/endOf.js";
+export {
+	startOfDay,
+	startOfHour,
+	startOfISOWeekYear,
+	startOfMinute,
+	startOfMonth,
+	startOfQuarter,
+	startOfWeek,
+	startOfYear,
+} from "./boundaries/startOf.js";
+
+export { addBusinessDays, addBusinessHours } from "./business/add.js";
+export {
+	differenceInBusinessDays,
+	differenceInBusinessHours,
+} from "./business/difference.js";
+
+export { createDate, fromUnixTime, toDate, toUnixTime } from "./core/create.js";
+export { isDate, isValid } from "./core/validation.js";
+
+export {
+	durationToMilliseconds,
+	formatDuration,
+	intervalToDuration,
+} from "./format/duration.js";
+export {
+	formatDistance,
+	formatDistanceIntl,
+	formatDistanceStrict,
+	formatDistanceToNow,
+	formatRelative,
+	formatRelativeTime,
+} from "./format/relative.js";
+export { format, formatDate, formatInTimeZone } from "./format/standard.js";
+export {
+	formatISO,
+	formatISO9075,
+	formatRFC2822,
+	formatRFC3339,
+	parseISO,
+	toISOString,
+} from "./format/standards.js";
+
+export {
+	eachDayOfInterval,
+	eachHourOfInterval,
+	eachMinuteOfInterval,
+	eachMonthOfInterval,
+	eachWeekOfInterval,
+	eachYearOfInterval,
+} from "./intervals/each.js";
+export {
+	getOverlappingDaysInInterval,
+	isBetween,
+	isOverlapping,
+	isWithinRange,
+} from "./intervals/overlap.js";
+
+export {
+	add,
+	addDays,
+	addHours,
+	addMilliseconds,
+	addMinutes,
+	addMonths,
+	addSeconds,
+	addWeeks,
+	addYears,
+	nextDay,
+} from "./math/add.js";
+export {
+	differenceInDays,
+	differenceInHours,
+	differenceInMilliseconds,
+	differenceInMinutes,
+	differenceInMonths,
+	differenceInSeconds,
+	differenceInWeeks,
+	differenceInYears,
+} from "./math/difference.js";
+export {
+	previousDay,
+	sub,
+	subDays,
+	subHours,
+	subMilliseconds,
+	subMinutes,
+	subMonths,
+	subSeconds,
+	subWeeks,
+	subYears,
+} from "./math/sub.js";
+
+export {
+	isAM,
+	isFirstDayOfMonth,
+	isInLeapYear,
+	isLastDayOfMonth,
+	isLeapYear,
+	isPM,
+	isThisMonth,
+	isThisWeek,
+	isThisYear,
+	isToday,
+	isTomorrow,
+	isWeekday,
+	isWeekend,
+	isYesterday,
+} from "./query/calendar.js";
+export { closestTo, compareAsc, compareDesc, max, min } from "./query/compare.js";
+export {
+	isSameDay,
+	isSameHour,
+	isSameISOWeekYear,
+	isSameMinute,
+	isSameMonth,
+	isSameQuarter,
+	isSameSecond,
+	isSameTime,
+	isSameWeek,
+	isSameYear,
+} from "./query/equality.js";
+export {
+	isAfter,
+	isBefore,
+	isEqual,
+	isFuture,
+	isPast,
+	isSameOrAfter,
+	isSameOrBefore,
+} from "./query/relative.js";
+
+export {
+	getDate,
+	getDayOfWeek,
+	getDayOfYear,
+	getDaysInMonth,
+	getDaysInYear,
+	getHours,
 	getISOWeek,
 	getISOWeeksInYear,
 	getISOWeekYear,
-	getOverlappingDaysInInterval,
+	getMilliseconds,
+	getMinutes,
+	getMonth,
+	getQuarter,
+	getSeconds,
+	getTimestamp,
 	getWeekOfMonth,
 	getWeeksInMonth,
-	intervalToDuration,
-	max,
-	min,
-	nextDay,
-	previousDay,
-	roundToNearestHours,
-	roundToNearestMinutes,
+	getYear,
+} from "./units/get.js";
+export {
 	set,
 	setDate,
 	setDay,
@@ -120,39 +176,7 @@ export {
 	setMonth,
 	setSeconds,
 	setYear,
-	startOfDay,
-	startOfHour,
-	startOfISOWeekYear,
-	startOfMinute,
-	startOfMonth,
-	startOfQuarter,
-	startOfWeek,
-	startOfYear,
-	sub,
-	subDays,
-	subHours,
-	subMilliseconds,
-	subMinutes,
-	subMonths,
-	subSeconds,
-	subWeeks,
-	subYears,
-	toUnixTime,
-} from "./manipulation.js";
-
-export {
-	format,
-	formatDate,
-	formatDuration,
-	formatInTimeZone,
-	formatISO,
-	formatISO9075,
-	formatRelativeTime,
-	formatRFC2822,
-	formatRFC3339,
-	parseISO,
-	toISOString,
-} from "./format.js";
+} from "./units/set.js";
 
 export type {
 	DateInput,
@@ -171,4 +195,4 @@ export type {
 	RelativeTimeUnit,
 	RoundingMethod,
 	WeekStartsOn,
-} from "./types.js";
+} from "./types/types.js";
