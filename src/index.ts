@@ -153,3 +153,22 @@ export {
 	parseISO,
 	toISOString,
 } from "./format.js";
+
+export type {
+	DateInput,
+	DateInterval,
+	DateRange,
+	DateValues,
+	DayOfWeek,
+	Duration,
+	FormatDistanceIntlOptions,
+	FormatDistanceOptions,
+	FormatDistanceStrictOptions,
+	FormatDistanceStrictUnit,
+	FormatDistanceToNowOptions,
+	FormatRelativeOptions,
+	IsBetweenOptions,
+	RelativeTimeUnit,
+	RoundingMethod,
+	WeekStartsOn,
+} from "./types.js";
