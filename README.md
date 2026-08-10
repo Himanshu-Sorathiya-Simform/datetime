@@ -2,6 +2,8 @@
 
 A strictly client-side, fully type-safe, zero-dependency toolkit for parsing, querying, manipulating, and formatting dates in TypeScript. Every function is a pure, immutable transformation — no wrapper classes, no prototype patching, no hidden global state.
 
+**[ Deep Dive: Full Documentation & Real-World Use Cases ](https://datetime-frontend.pages.dev/)**
+
 ## Motivation (Why this module?)
 
 Native `Date` math is a minefield: months are 0-based, mutation happens in place, arithmetic silently overflows across month boundaries, and adding raw milliseconds breaks the moment a DST transition is crossed. Giant wrapper libraries like Moment.js solve some of this, but drag in mutable object instances, a heavyweight locale bundle, and an API surface that actively encourages chained mutation bugs.
